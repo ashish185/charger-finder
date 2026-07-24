@@ -415,6 +415,9 @@ sequenceDiagram
 ## Open items requiring your decision
 
 1. SMS/OTP vendor selection.
-2. Operator Portal auth model (recommend separate from driver OTP — confirm).
-3. Multi-city readiness — confirmed out of scope for MVP per PRD, but worth flagging where in this architecture that assumption is baked in (§7) so it's a conscious debt, not a surprise later.
-4. UX/wireframes not yet available — once provided, §5.3 (component structure) and §6 (flows) should be revisited against actual screens.
+2. Don't know about much rollback strategy?
+3. Some issues with AWS too.
+4. Operator Portal auth model (recommend separate from driver OTP — confirm).
+5. Multi-city readiness — confirmed out of scope for MVP per PRD, but worth flagging where in this architecture that assumption is baked in (§7) so it's a conscious debt, not a surprise later.
+6. UX/wireframes not yet available — once provided, §5.3 (component structure) and §6 (flows) should be revisited against actual screens.
+7. 
