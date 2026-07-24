@@ -3,16 +3,16 @@
 **Version:** 1.0
 **Status:** Draft
 **Owner:** Ash
-**Related PRD:** ChargeFinder_PRD_V2.md
-
+**Related PRD:** 
+[ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md)
 ---
 
 ## 1. Related Documents
 
 | Document | Location | Notes |
 |---|---|---|
-| PRD | ChargeFinder_PRD_V2.md | Source of truth for scope, flows, must-haves |
-| UX / Wireframes | *Not yet provided* | To be linked once available |
+| PRD | [ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md) | Source of truth for scope, flows, must-haves |
+| UX / Wireframes | [UX](https://claude.ai/public/artifacts/feb2801e-977c-44d6-a330-7261a3a80467)  | To be linked once available |
 
 **Assumptions carried from PRD:** single launch city, 3–5 pilot CPOs, 10–20 stations at launch, 8-week MVP delivery window (per PRD §19). This TDD scopes infrastructure and design decisions to that scale, with scale-out notes in §7.
 
@@ -37,6 +37,7 @@ Chargefinder MVP consists of three client-facing surfaces and one internal surfa
 ## 3. Architecture
 
 ### 3.1 High-level component diagram
+Diagram Link: https://excalidraw.com/#json=_titm-BThuW-HFcforzmP,a8M5kQa17MSfKhG7B4ZEeg
 
 ```mermaid
 flowchart LR
@@ -150,7 +151,6 @@ Report --> Queue
 | Maps | Google Maps Platform | Directions, geocoding, map rendering (your call) |
 | Object storage | S3 | Static assets, CPO onboarding exports, portal-uploaded images |
 | CDN | CloudFront | PWA shell + static assets |
-| Infra as code | Terraform | Repeatable ECS/EventBridge/Mongo Atlas provisioning |
 | CI/CD | GitHub Actions | Build/test/deploy pipelines per service |
 | Observability | CloudWatch + Grafana (or Atlas monitoring) + Sentry | See §9 |
 
