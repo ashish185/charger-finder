@@ -5,6 +5,7 @@
 **Owner:** Ashish
 **Related PRD:** 
 [ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md)
+**DOC**: https://docs.google.com/document/d/1fVdLcuFMi2X1SHzRa_Z4A2ba-yWB0FKWc8RWbfKGwv4/edit?tab=t.0
 ---
 
 ## 1. Related Documents
@@ -39,7 +40,7 @@ ChargeFinder MVP consists of three client-facing surfaces and one internal surfa
 ## 3. Architecture
 
 ### 3.1 High-level component diagram
-Diagram Link: https://excalidraw.com/#json=_titm-BThuW-HFcforzmP,a8M5kQa17MSfKhG7B4ZEeg
+Diagram Link: https://excalidraw.com/#json=DfsnApDfm5xjrclSXBMvu,jFgP3kpil6_ZUP4-gpTKhA
 
 ```mermaid
 flowchart LR
@@ -86,7 +87,6 @@ Gateway --> Discovery
 Gateway --> Charger
 Gateway --> Report
 Gateway --> Estimate
-Gateway --> OperatorAPI
 
 Auth --> OTP
 
@@ -97,7 +97,6 @@ Vehicle --> Database
 Discovery --> Database
 Charger --> Database
 Report --> Database
-OperatorAPI --> Database
 
 Discovery --> Cache
 
