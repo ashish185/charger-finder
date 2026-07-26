@@ -1,8 +1,8 @@
-# Chargefinder — Technical Design Document (TDD)
+# ChargeFinder — Technical Design Document (TDD)
 
 **Version:** 1.0
-**Status:** Draft
-**Owner:** Ash
+**Status:** Ready for Review
+**Owner:** Ashish
 **Related PRD:** 
 [ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md)
 ---
@@ -14,13 +14,15 @@
 | PRD | [ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md) | Source of truth for scope, flows, must-haves |
 | UX / Wireframes | [UX](https://claude.ai/public/artifacts/feb2801e-977c-44d6-a330-7261a3a80467)  | To be linked once available |
 
-**Assumptions carried from PRD:** single launch city, 3–5 pilot CPOs, 10–20 stations at launch, 8-week MVP delivery window (per PRD §19). This TDD scopes infrastructure and design decisions to that scale, with scale-out notes in §7.
-
+**Assumptions carried from PRD:** 
+- single launch city, 3–5 pilot CPOs, 10–20 stations at launch,
+- 8-week MVP delivery window (per PRD §19). 
+- This TDD scopes infrastructure and design decisions to that scale, with scale-out notes in §7.
 ---
 
 ## 2. Overview
 
-Chargefinder MVP consists of three client-facing surfaces and one internal surface, backed by a shared platform:
+ChargeFinder MVP consists of three client-facing surfaces and one internal surface, backed by a shared platform:
 
 1. **Driver PWA** — vehicle setup, map discovery, charger detail, fault reporting.
 2. **Operator Portal (web)** — CPO-facing dashboard for manual data/status updates (PRD §13, Mode 1).
@@ -44,7 +46,6 @@ flowchart LR
 
 subgraph Client
     Driver["Driver App"]
-    Operator["Operator Portal"]
 end
 
 subgraph API
@@ -57,8 +58,6 @@ subgraph Services
     Discovery["Station Discovery"]
     Charger["Charger Management"]
     Report["Fault Reporting"]
-    Estimate["Cost Estimation"]
-    OperatorAPI["Operator Services"]
     Sync["Data Synchronization"]
 end
 
@@ -80,7 +79,6 @@ subgraph External
 end
 
 Driver --> Gateway
-Operator --> Gateway
 
 Gateway --> Auth
 Gateway --> Vehicle
@@ -122,7 +120,6 @@ Report --> Queue
 - **Charger Management** — source of truth for static + dynamic charger data; owns the freshness label logic.
 - **Fault Reporting** — accepts timestamped reports, triggers "confirm if you're there" flow, feeds trust/confidence scoring.
 - **Cost Estimation** — rule-based calculator (travel time, wait time, charging duration, cost) per PRD §9.
-- **Operator Services** — backs portal-based CPOs: station/connector CRUD, live status toggle, maintenance mode, pricing.
 - **Data Synchronization** — backs API-sync CPOs: pulls or receives pushes from operator backends, normalizes into Chargefinder's schema.
 - **Scheduler + Background Workers** — scheduled jobs: freshness decay, fault-report decay, CPO sync polling cadence.
 - **Message Queue** — decouples data-synchronization writes from the read path so a slow or failing CPO feed can't block charger reads.
@@ -137,26 +134,55 @@ Report --> Queue
 
 ## 4. Tech Stack / Dependencies
 
-| Layer | Choice | Notes |
+### 4.1 Frontend (Driver App)
+
+| Concern | Choice | Notes |
 |---|---|---|
-| Driver client | PWA — React + Vite, Workbox for service worker | Installable, offline shell, push notifications via Web Push |
-| Operator portal | React (Next.js) | Server-rendered dashboard, reuses component patterns from driver app |
-| Backend runtime | Node.js + NestJS | Modular, DI-friendly, good fit for service-per-bounded-context |
-| API layer | REST via API Gateway | GraphQL not justified at this scope; simple REST keeps the 8-week build honest |
+| Framework | Next.js | React Server Components (RSC) for SEO-relevant pages |
+| Language | TypeScript | Type safety across app and API layer |
+| Styling | Tailwind CSS | |
+| Design system | shadcn/ui | |
+| Data fetching/caching | TanStack Query | Request de-duplication, caching, background refetch |
+| State management | React Context | No external state library at MVP scope |
+| Maps | Google Maps JS library | |
+| Live data | Long polling | Chosen over WebSockets/SSE for MVP simplicity |
+| App type | PWA | Installable, offline shell |
+| Error handling | Error boundaries per section | Isolates a broken section instead of crashing the whole page |
+| Business logic | API hooks | Business logic lives in hooks, not components |
+| Static analysis | ESLint + SonarQube | |
+| Unit testing | React Testing Library | |
+| Observability | Sentry | Logging, error tracing, Web Vitals performance monitoring, user telemetry |
+| Product analytics | Microsoft Clarity + Google Analytics 4 | Session replay + behavioral analytics |
+
+### 4.2 Backend
+
+| Concern | Choice | Notes |
+|---|---|---|
+| Runtime/framework | Node.js + Express | |
+| Compute | EC2 (Auto Scaling Group, multiple instances) | See §3.1 |
+| Database access | Repository classes (e.g. `UserRepository.findById(id)`) | Convention: suffix `Repository`, see §3.3, §5.2 |
 | Database | MongoDB Atlas (managed) | `2dsphere` geo index; per-collection TTL for stale fault reports |
 | Cache | Redis (ElastiCache) | Nearby-search response cache, session/rate-limit store |
-| Scheduling | AWS EventBridge + Lambda | Freshness decay, fault decay, Mode-2 CPO polling |
-| Queue | SQS | Decouples ingest from charger-data writes; retry/backoff for CPO sync |
+| Background/scheduled work | Lambda (concurrent invocations) + Scheduler | CPO data sync — see §3.2 |
+| Queue | SQS | Decouples sync/report writes from the read path |
+| API layer | API Gateway | Routing + rate limiting |
 | Auth | Custom OTP service + JWT | SMS via a provider (e.g., MSG91/Twilio — confirm with vendor eval) |
-| Maps | Google Maps Platform | Directions, geocoding, map rendering (your call) |
-| Object storage | S3 | Static assets, CPO onboarding exports, portal-uploaded images |
-| CDN | CloudFront | PWA shell + static assets |
-| CI/CD | GitHub Actions | Build/test/deploy pipelines per service |
-| Observability | CloudWatch + Grafana (or Atlas monitoring) + Sentry | See §9 |
+| Maps | Google Maps Platform | Directions, geocoding |
+| Infra as code | Terraform | Repeatable EC2/Lambda/Mongo Atlas provisioning |
 
-**Open dependency decisions (need your input before finalizing):**
-- SMS/OTP vendor (cost + India delivery reliability matters more than feature set here).
-- Whether Operator Portal auth is separate from driver OTP auth (recommend: yes, email/password or magic link, since CPOs are business users).
+### 4.3 CI/CD
+
+| App | Pipeline | Target |
+|---|---|---|
+| Next.js app (Driver App) | Vercel or Render.com | Managed build/deploy, preview environments per PR |
+| Express backend | GitHub Actions (`deploy.yml`) | Deploys to EC2 |
+
+### 4.4 Observability & Analytics
+
+| Concern | Tool | Notes |
+|---|---|---|
+| Logging, tracing, performance, error tracking, user telemetry | Sentry | Single tool covering frontend + backend |
+| Product/behavioral analytics | Microsoft Clarity, Google Analytics 4 | Session replay, funnel/behavior analysis |
 
 ---
 
@@ -229,7 +255,6 @@ PATCH /operator/chargers/:id/maintenance-mode
 # CPO API sync (Mode 2, inbound from CPO or polled by IngestSvc)
 POST /partner/v1/stations/:externalId/status   { status, price, lastUpdatedAt }
 ```
-
 ### 5.3 UI component structure (Driver PWA)
 
 ```
@@ -253,7 +278,6 @@ App
 - Every write to `chargers.$.status` sets `lastUpdatedAt` and `lastUpdatedSource`.
 - A scheduled Lambda (EventBridge cron, every 5 min) computes a `freshnessLabel` bucket (`"just now"`, `"Xm ago"`, `"stale — Xd ago"`) — computed at read time in the API is actually preferred over precomputing, to avoid clock-drift bugs; the Lambda's job is instead to **flag** chargers whose `lastUpdatedAt` exceeds a threshold (e.g., 24h) so they can be deprioritized in `/chargers/nearby` ranking.
 - Fault reports decay via MongoDB TTL index on `decayAt` (set to `reportedAt + 72h` unless reconfirmed), matching PRD §10's "decay old fault reports unless confirmed again."
-
 
 ---
 
@@ -332,6 +356,29 @@ sequenceDiagram
     Charger->>Database: upsert status, lastUpdatedAt, lastUpdatedSource
 ```
 
+### 6.4 Flow 3 — Save a favorite
+
+```mermaid
+sequenceDiagram
+    participant U as Driver
+    participant App as Driver App
+    participant Gateway as API Layer
+    participant Charger as Charger Management
+    participant Database
+
+    U->>App: Tap favorite icon on charger detail
+    App->>Gateway: POST /chargers/:id/favorite
+    Gateway->>Charger: add favorite
+    Charger->>Database: upsert via FavoriteRepository
+    Database-->>Charger: confirmed
+    Charger-->>App: favorite added
+    U->>App: Open "Favorites" tab
+    App->>Gateway: GET /favorites
+    Gateway->>Charger: fetch user's favorites
+    Charger->>Database: query via FavoriteRepository
+    Database-->>Charger: favorited chargers
+    Charger-->>App: charger list (with current status/freshness)
+```
 ---
 
 ## 7. Scalability
