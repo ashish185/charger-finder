@@ -13,7 +13,9 @@
 | Document | Location | Notes |
 |---|---|---|
 | PRD | [ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md) | Source of truth for scope, flows, must-haves |
+| PRD review | [Review](https://docs.google.com/document/d/1fVdLcuFMi2X1SHzRa_Z4A2ba-yWB0FKWc8RWbfKGwv4/edit?tab=t.0)  | To be linked once available |
 | UX / Wireframes | [UX](https://claude.ai/public/artifacts/feb2801e-977c-44d6-a330-7261a3a80467)  | To be linked once available |
+| TDD for Review | [Review_TDD](https://hackmd.io/LxiVoKqCRk-dvTFdZF0RoQ)  | To be linked once available |
 
 **Assumptions carried from PRD:** 
 - single launch city, 3–5 pilot CPOs, 10–20 stations at launch,
@@ -466,4 +468,3 @@ sequenceDiagram
 4. Operator Portal auth model (recommend separate from driver OTP — confirm).
 5. Multi-city readiness — confirmed out of scope for MVP per PRD, but worth flagging where in this architecture that assumption is baked in (§7) so it's a conscious debt, not a surprise later.
 6. UX/wireframes not yet available — once provided, §5.3 (component structure) and §6 (flows) should be revisited against actual screens.
-7. 
