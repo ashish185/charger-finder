@@ -2,12 +2,8 @@
 
 **Version:** 3.0
 **Status:** Draft — V3 (Booking + Payment + CPO Portal core)
-**Owner:** Ashish
+**Owner:** Ashish, Ashwini, Ratanadeep
 **Related PRD:**
-[ChargeFinder_PRD_V3](./ChargeFinder_PRD_V3.md) *(product was renamed ChargeFinder → ChargeHub; PRD filenames/content are unchanged — treat "Chargefinder" references inside them as ChargeHub)*
-**TDD(Review)**: https://docs.google.com/document/d/1fVdLcuFMi2X1SHzRa_Z4A2ba-yWB0FKWc8RWbfKGwv4/edit?tab=t.0
-**PRD(Review)**: 
-
 ---
 
 ## 1. Related Documents
@@ -15,7 +11,8 @@
 | Document | Location | Notes |
 |---|---|---|
 | PRD (current) | [ChargeFinder_PRD_V3](./ChargeFinder_PRD_V3.md) | Source of truth for scope, flows, must-haves — booking + payment + CPO accountability model |
-| PRD (superseded) | [ChargeFinder_PRD_V2](./ChargeFinder_PRD_V2.md) | Earlier discovery-only scope; kept for history, no longer authoritative |
+| TDD review | [HackMD review](https://hackmd.io/LxiVoKqCRk-dvTFdZF0RoQ?both) | Review link for TDD feedback |
+| PRD review | [Google Doc review](https://docs.google.com/document/d/1i-_Djyi36fmY40HSNdqFwWQnaZwMOZzLs-nzqPEbxbQ/edit?tab=t.0) | Review link for PRD feedback |
 | UX / Wireframes | [UX](https://claude.ai/public/artifacts/feb2801e-977c-44d6-a330-7261a3a80467) | Reflects an earlier (discovery-only) flow — needs a pass for booking/payment/session screens |
 
 **Assumptions carried from PRD V3:**
