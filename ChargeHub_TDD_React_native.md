@@ -148,8 +148,66 @@ Charger -.-> CPOSync
 Charger -.-> Storage
 ```
 
-**Note on the removed component:** the previous revision had a standalone `SessionService` for the "authenticate at station → start → track → complete" lifecycle. That's gone — `OrderService` owns the entire lifecycle from placement through payment through charging completion, since payment now happens upfront and there's no independent settlement step that would justify a separate service.
 
+### 3.1.1 Flow Steps & Explanation
+
+### 1. Client entry — Driver App and CPO Portal
+- Both the **Driver App** and **CPO Portal** (Expo/React Native mobile apps) route all requests through the **API Layer (Gateway)** — they never call a service directly.
+- The Gateway handles both **routing and rate limiting**, so no single client/IP can overload the backend.
+- The Driver App also calls **Maps Service** directly (client-side rendering, location picking, navigation) — this is the one exception where the gateway is bypassed, since it's purely a UI-side, non-sensitive map interaction.
+
+### 2. Authentication flow
+- A login/signup request goes from the Gateway to **AuthService**.
+- AuthService calls the external **OTP Service** for mobile number verification — both OTP generation and validation go through this external dependency.
+- After successful authentication, a session/token is returned to the client for use in subsequent requests.
+
+### 3. Charger discovery flow (Availability)
+- When a driver searches for nearby chargers, the request goes to **ChargerAvailabilityService**.
+- This service combines data from three sources:
+  - **Maps Service** for geolocation/distance calculation
+  - **Database** (MongoDB with geospatial indexing) for actual charger records
+  - **Cache** (Redis) for frequently-accessed availability data — avoiding repeated DB hits and keeping responses fast.
+
+### 4. Vehicle & Charger management flow
+- **VehicleService**: handles a driver adding/editing their vehicle — persists directly to the Database.
+- **ChargerService**: manages core charger data (details, status, pricing), reading/writing to the Database.
+- ChargerService has a dotted connection to — **External CPO API Sync** and **Object Storage**(Future Scope) — not part of MVP yet, but planned for automated CPO data sync and storing charger images/documents.
+
+### 5. Order placement flow
+- When a driver books a charging slot, the request goes to **OrderService**, which creates an order in the Database (status: `placed`).
+- OrderService directly triggers **PaymentService** — this is a pay-first model, meaning the charging session only starts after payment (there's no separate SessionService; order status itself tracks the lifecycle: placed → paid → charging → completed).
+- PaymentService processes the actual transaction via the external **Payment Gateway**.
+- Once payment completes, PaymentService pushes an event onto the **Message Queue**.
+
+### 6. Async/Queue-driven flow (for decoupling)
+- The **Message Queue** is the backend's central async communication hub:
+  - **FaultReportingService** pushes fault reports onto the queue
+    **Consumer**
+        Consumers pick these events up and propagate them further:
+          - To **ChargerService** — to update charger status based on a fault report (e.g., marking it out-of-service)
+          - To **AccountabilityService** — for CPO penalty/tracking (e.g., a missed daily status acknowledgement)
+  - **PaymentService** pushes payment-related events (success/failure/refund) onto the queue
+    **Consumer**
+        Consumers pick these events up and propagate them further:
+         - To **OrderService** — to sync/update order status after payment confirms or fails
+- This decoupled design means services don't call each other directly — they communicate asynchronously via the queue, keeping the system resilient and scalable.
+
+### 7. Background jobs — Scheduler + Workers
+- **Scheduler** fires periodic triggers (e.g., daily CPO status check).
+- **Worker** picks up the trigger and calls **AccountabilityService**, which evaluates the CPO's daily acknowledgement/penalty logic, with the result persisted to the **Database**.
+- This entire flow runs independent of client requests — it's purely time-based automation.
+
+### 8. Reviews & Accountability
+- After an order completes, the driver can leave a review → this goes to **ReviewsAndRatingService**, which stores it in the Database.
+- ReviewsAndRatingService also signals **AccountabilityService**, so poor ratings feed into the CPO's accountability score.
+
+### 9. CPO Portal specific flow
+- Requests from the CPO Portal go to **OperatorService** — where the CPO manages their profile, chargers, and daily acknowledgements.
+- OperatorService interacts directly with the Database.
+
+### 10. Future Scope (dotted lines)
+- **External CPO API Sync**: automated integration with larger CPOs — syncing real-time charger data via their API instead of manual backfill.
+- **Object Storage**: for storing charger images, documents, or fault-proof photos — not in scope yet, planned for later.
 ### 3.2 Component responsibilities
 
 - **`AuthService`** — Phone OTP issuance/verification, session tokens (drivers); separate credential flow for CPO Portal (see §8).
