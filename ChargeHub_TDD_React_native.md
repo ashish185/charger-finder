@@ -54,6 +54,7 @@ ChargeHub MVP is a **pay-first booking app**, delivered as two native mobile app
 ## 3. Architecture
 
 ### 3.1 High-level component diagram
+For better open this link: https://drive.google.com/file/d/1rwl_tTzs5ImbToktSO5W2ww4pXulg4az/view?usp=sharing
 
 ```mermaid
 flowchart LR
