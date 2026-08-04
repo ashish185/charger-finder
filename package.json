@@ -1,11 +1,47 @@
 {
-    "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "lint": "next lint",
-        "typecheck": "tsc --noEmit",
-        "test": "vitest run",
-        "format": "prettier . --write",
-        "format:check": "prettier . --check"
-    }
+  "name": "Charger-Finder-Backend",
+  "version": "1.0.0",
+  "description": "Express backend for the ChargeHub project, providing APIs for user authentication, charger management, and payment processing.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env.development server.js",
+    "start": "node --env-file=.env.production server.js",
+    "build": "next build",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase": "^12.17.0",
+    "firebase-admin": "^14.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.7.3",
+    "razorpay": "^2.9.8",
+    "validator": "^13.12.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6",
+    "prettier-eslint": "^16.4.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,scss}": [
+      "prettier --write"
+    ]
+  }
 }
