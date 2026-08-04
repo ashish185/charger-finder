@@ -1,3 +1,4 @@
+// routes/index.js: Central router that mounts all API route modules.
 import { Router } from "express";
 import authRouter from "./auth.js";
 

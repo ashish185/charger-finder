@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// config/database.js: Connects the app to MongoDB using Mongoose.
 import mongoose from "mongoose";
 
 const connectToDatabase = async () => {

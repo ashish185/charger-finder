@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-// server.js
+// server.js: Main entry point for the Express backend server.
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";

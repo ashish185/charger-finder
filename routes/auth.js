@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// routes/auth.js: Handles authentication-related endpoints like signup, login, logout, and profile.
 import express from "express";
 import { validateSignUpData } from "../utils/validation.js";
 import User from "../models/user.js";
@@ -93,31 +94,31 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-authRouter.get("/profile", requireAuth, async (req, res) => {
-  try {
-    const existingToken = getTokenFromRequest(req);
-    if (existingToken) {
-      try {
-        const payload = jwt.verify(existingToken, process.env.JWT_SECRET);
-        const existingUser = await User.findById(payload._id);
-        if (existingUser) {
-          return res.json({
-            data: {
-              id: existingUser._id,
-              name: `${existingUser.firstName}${existingUser.lastName ? ` ${existingUser.lastName}` : ""}`.trim(),
-              emailId: existingUser.emailId,
-            },
-          });
-        }
-      } catch (ignored) {
-        // invalid token, continue with normal login flow
-      }
-    }
-  } catch (err) {
-    res
-      .status(400)
-      .json({ message: "Error fetching profile", error: err.message });
-  }
-});
+// authRouter.get("/profile", requireAuth, async (req, res) => {
+//   try {
+//     const existingToken = getTokenFromRequest(req);
+//     if (existingToken) {
+//       try {
+//         const payload = jwt.verify(existingToken, process.env.JWT_SECRET);
+//         const existingUser = await User.findById(payload._id);
+//         if (existingUser) {
+//           return res.json({
+//             data: {
+//               id: existingUser._id,
+//               name: `${existingUser.firstName}${existingUser.lastName ? ` ${existingUser.lastName}` : ""}`.trim(),
+//               emailId: existingUser.emailId,
+//             },
+//           });
+//         }
+//       } catch (ignored) {
+//         // invalid token, continue with normal login flow
+//       }
+//     }
+//   } catch (err) {
+//     res
+//       .status(400)
+//       .json({ message: "Error fetching profile", error: err.message });
+//   }
+// });
 
 export default authRouter;
