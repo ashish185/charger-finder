@@ -32,7 +32,6 @@ const connectToDatabase = async () => {
     );
   }
   const mongStr = `mongodb+srv://${mongogUser}:${mongoPassword}@${domainName}/${mongoDb}?appName=${clusterName}`;
-  console.log("Connecting to MongoDB...", mongStr);
   await mongoose.connect(mongStr);
 };
 
