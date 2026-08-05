@@ -45,5 +45,3 @@ jobs:
       # - name: Run Unit Tests
       #   run: npm test
 
-      - name: Build Application
-        run: npm run build
