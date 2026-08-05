@@ -9,6 +9,10 @@ import { getTokenFromRequest, requireAuth } from "../middleware/auth.js";
 
 const authRouter = express.Router();
 
+authRouter.get("/health", (req, res) => {
+  res.json({ status: "ok", message: "Auth API is running" });
+});
+
 authRouter.post("/signup", async (req, res) => {
   try {
     // Validation of data
