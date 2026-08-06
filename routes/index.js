@@ -2,6 +2,7 @@
 import { Router } from "express";
 import authRouter from "./auth.js";
 import healthCheckRouter from "./health-check.js";
+import chargersRouter from "./chargers.js";
 
 const v1Router = Router();
 
@@ -9,5 +10,8 @@ const v1Router = Router();
 v1Router.use("/auth", authRouter);
 
 v1Router.use("/api/v1", healthCheckRouter);
+
+// Charger discovery and details.
+v1Router.use("/api/v1/chargers", chargersRouter);
 
 export default v1Router;
