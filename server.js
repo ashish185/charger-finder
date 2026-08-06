@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import router from "./routes/index.js";
 import connectToDatabase from "./config/database.js";
 import cookieParser from "cookie-parser";
+import swaggerSpec from "./swagger.js";
+import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 
@@ -56,6 +58,8 @@ app.use(router);
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "Login API is running" });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Basic 404 handler
 app.use((req, res) => {

@@ -51,3 +51,8 @@ charger-finder/
 ├── readme.md                  # Project documentation
 └── server.js                  # Express server entry point
 ```
+
+## Routes:
+
+- http://localhost:5000/api-docs/
+-
