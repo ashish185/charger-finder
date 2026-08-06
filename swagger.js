@@ -1,6 +1,11 @@
 /* eslint-disable no-undef */
 import swaggerJsdoc from "swagger-jsdoc";
 
+const baseUrl = process.env.API_URL
+  ? process.env.API_URL.replace(/\/$/, "")
+  : "";
+const serverUrl = baseUrl ? `${baseUrl}/api/v1` : "/api/v1";
+
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -11,7 +16,7 @@ const options = {
     },
     servers: [
       {
-        url: process.env.API_URL,
+        url: serverUrl,
       },
     ],
   },
