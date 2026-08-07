@@ -8,14 +8,15 @@
 
 ## 1. Related Documents
 
-| Document | Location | Notes |
-|---|---|---|
-| PRD (current) | [ChargeFinder_PRD_V3](./ChargeFinder_PRD_V3.md) | Source of truth for scope, flows, must-haves — booking + payment + CPO accountability model |
-| TDD review | [HackMD review](https://hackmd.io/LxiVoKqCRk-dvTFdZF0RoQ?both) | Review link for TDD feedback |
-| PRD review | [Google Doc review](https://docs.google.com/document/d/1i-_Djyi36fmY40HSNdqFwWQnaZwMOZzLs-nzqPEbxbQ/edit?tab=t.0) | Review link for PRD feedback |
-| UX / Wireframes | [UX](https://claude.ai/public/artifacts/feb2801e-977c-44d6-a330-7261a3a80467) | Reflects an earlier (discovery-only) flow — needs a pass for booking/payment/session screens |
+| Document        | Location                                                                                                          | Notes                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| PRD (current)   | [ChargeFinder_PRD_V3](./ChargeFinder_PRD_V3.md)                                                                   | Source of truth for scope, flows, must-haves — booking + payment + CPO accountability model  |
+| TDD review      | [HackMD review](https://hackmd.io/LxiVoKqCRk-dvTFdZF0RoQ?both)                                                    | Review link for TDD feedback                                                                 |
+| PRD review      | [Google Doc review](https://docs.google.com/document/d/1i-_Djyi36fmY40HSNdqFwWQnaZwMOZzLs-nzqPEbxbQ/edit?tab=t.0) | Review link for PRD feedback                                                                 |
+| UX / Wireframes | [UX](https://claude.ai/public/artifacts/feb2801e-977c-44d6-a330-7261a3a80467)                                     | Reflects an earlier (discovery-only) flow — needs a pass for booking/payment/session screens |
 
 **Assumptions carried from PRD V3:**
+
 - single launch city, 3–5 pilot CPOs, 10–20 stations at launch,
 - 8-week MVP delivery window (per PRD §21),
 - CPO Portal is the **only** operator management model in MVP — no external CPO backend integration,
@@ -28,15 +29,17 @@
 ChargeHub MVP is now a **booking app**, not a discovery app, with two client-facing surfaces and one internal surface:
 
 1. **Driver App** — vehicle setup, map discovery, charger detail, booking, payment, session tracking, favoriting, fault reporting.
-2. **CPO Portal (web)** — the *only* operator management surface: station/connector setup, pricing, maintenance mode, booking calendar, daily status acknowledgement, settlement summary (PRD §11, §15).
+2. **CPO Portal (web)** — the _only_ operator management surface: station/connector setup, pricing, maintenance mode, booking calendar, daily status acknowledgement, settlement summary (PRD §11, §15).
 3. **Admin/Internal tools** — pilot monitoring, discrepancy/accountability oversight.
 
 **Design goals for this revision:**
+
 - Booking-first: the charger detail page must answer "can I book this, right now, for what it'll cost" before the driver commits (PRD §5, §9).
 - Make CPO accountability a first-class, visible system property — daily acknowledgement, discrepancy history, and ranking impact are data, not just policy (PRD §12).
 - Keep payment handling thin: ChargeHub orchestrates bookings/sessions and calls out to a payment gateway; it does not hold funds or build a ledger.
 
 **Scope notes (major changes from the prior TDD revision):**
+
 - **CPO Portal is back as core MVP**, not Future Scope — PRD V3 makes it the sole operator model.
 - **External CPO API sync is now explicitly out of MVP** (PRD §15: "No external CPO system integration is required in MVP") — moved to Future Scope.
 - **Booking, Payment, and Session** are new core components.
@@ -49,7 +52,7 @@ ChargeHub MVP is now a **booking app**, not a discovery app, with two client-fac
 
 ### 3.1 High-level component diagram
 
-*Note: this supersedes the previously linked Excalidraw diagram, which reflects the pre-V3 (discovery-only) architecture. Flag if you'd like a refreshed Excalidraw export of the diagram below.*
+_Note: this supersedes the previously linked Excalidraw diagram, which reflects the pre-V3 (discovery-only) architecture. Flag if you'd like a refreshed Excalidraw export of the diagram below._
 
 ```mermaid
 flowchart LR
@@ -173,54 +176,54 @@ All services that talk to the database do so exclusively through a **Repository*
 
 ### 4.1 Frontend (Driver App + CPO Portal)
 
-| Concern | Choice | Notes |
-|---|---|---|
-| Framework | Next.js | React Server Components (RSC) for SEO-relevant pages (Driver App); CPO Portal can be a standard Next.js app without the SEO requirement |
-| Language | TypeScript | Type safety across app and API layer |
-| Styling | Tailwind CSS | |
-| Design system | shadcn/ui | |
-| Data fetching/caching | TanStack Query | Request de-duplication, caching, background refetch |
-| State management | React Context | No external state library at MVP scope |
-| Maps | Google Maps JS library | |
-| Live data | Long polling | Booking status, session status, charger status |
-| App type | PWA (Driver App) | Installable, offline shell |
-| Error handling | Error boundaries per section | Isolates a broken section instead of crashing the whole page |
-| Business logic | API hooks | Business logic lives in hooks, not components |
-| Static analysis | ESLint + SonarQube | |
-| Unit testing | React Testing Library | |
-| Observability | Sentry | Logging, error tracing, Web Vitals performance monitoring, user telemetry |
-| Product analytics | Microsoft Clarity + Google Analytics 4 | Session replay + behavioral analytics |
+| Concern               | Choice                                 | Notes                                                                                                                                   |
+| --------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework             | Next.js                                | React Server Components (RSC) for SEO-relevant pages (Driver App); CPO Portal can be a standard Next.js app without the SEO requirement |
+| Language              | TypeScript                             | Type safety across app and API layer                                                                                                    |
+| Styling               | Tailwind CSS                           |                                                                                                                                         |
+| Design system         | shadcn/ui                              |                                                                                                                                         |
+| Data fetching/caching | TanStack Query                         | Request de-duplication, caching, background refetch                                                                                     |
+| State management      | React Context                          | No external state library at MVP scope                                                                                                  |
+| Maps                  | Google Maps JS library                 |                                                                                                                                         |
+| Live data             | Long polling                           | Booking status, session status, charger status                                                                                          |
+| App type              | PWA (Driver App)                       | Installable, offline shell                                                                                                              |
+| Error handling        | Error boundaries per section           | Isolates a broken section instead of crashing the whole page                                                                            |
+| Business logic        | API hooks                              | Business logic lives in hooks, not components                                                                                           |
+| Static analysis       | ESLint + SonarQube                     |                                                                                                                                         |
+| Unit testing          | React Testing Library                  |                                                                                                                                         |
+| Observability         | Sentry                                 | Logging, error tracing, Web Vitals performance monitoring, user telemetry                                                               |
+| Product analytics     | Microsoft Clarity + Google Analytics 4 | Session replay + behavioral analytics                                                                                                   |
 
 ### 4.2 Backend
 
-| Concern | Choice | Notes |
-|---|---|---|
-| Runtime/framework | Node.js + Express | |
-| Compute | EC2 (Auto Scaling Group, multiple instances) | See §3.1 |
-| Database access | Repository classes (e.g. `BookingRepository.findById(id)`) | Convention: suffix `Repository`, see §3.3, §5.2 |
-| Database | MongoDB Atlas (managed) | `2dsphere` geo index; per-collection TTL for stale fault reports |
-| Cache | Redis (ElastiCache) | Nearby-search response cache, session/rate-limit store, slot-hold locks for booking |
-| Background/scheduled work | Scheduler + Background Workers | Freshness decay, fault decay, daily acknowledgement check, payment webhook processing |
-| Queue | SQS | Decouples fault-report and payment-webhook processing from the request path |
-| API layer | API Gateway | Routing + rate limiting |
-| Auth | Custom OTP service + JWT (driver); separate credentials for CPO Portal | SMS via a provider (e.g., MSG91/Twilio — confirm with vendor eval) |
-| Maps | Google Maps Platform | Directions, geocoding |
-| Payments | External payment gateway (Razorpay/Stripe-style) | ChargeHub does not touch funds directly — vendor selection is an open item, see §14 |
-| Infra as code | Terraform | Repeatable EC2/Mongo Atlas provisioning |
+| Concern                   | Choice                                                                 | Notes                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Runtime/framework         | Node.js + Express                                                      |                                                                                       |
+| Compute                   | EC2 (Auto Scaling Group, multiple instances)                           | See §3.1                                                                              |
+| Database access           | Repository classes (e.g. `BookingRepository.findById(id)`)             | Convention: suffix `Repository`, see §3.3, §5.2                                       |
+| Database                  | MongoDB Atlas (managed)                                                | `2dsphere` geo index; per-collection TTL for stale fault reports                      |
+| Cache                     | Redis (ElastiCache)                                                    | Nearby-search response cache, session/rate-limit store, slot-hold locks for booking   |
+| Background/scheduled work | Scheduler + Background Workers                                         | Freshness decay, fault decay, daily acknowledgement check, payment webhook processing |
+| Queue                     | SQS                                                                    | Decouples fault-report and payment-webhook processing from the request path           |
+| API layer                 | API Gateway                                                            | Routing + rate limiting                                                               |
+| Auth                      | Custom OTP service + JWT (driver); separate credentials for CPO Portal | SMS via a provider (e.g., MSG91/Twilio — confirm with vendor eval)                    |
+| Maps                      | Google Maps Platform                                                   | Directions, geocoding                                                                 |
+| Payments                  | External payment gateway (Razorpay/Stripe-style)                       | ChargeHub does not touch funds directly — vendor selection is an open item, see §14   |
+| Infra as code             | Terraform                                                              | Repeatable EC2/Mongo Atlas provisioning                                               |
 
 ### 4.3 CI/CD
 
-| App | Pipeline | Target |
-|---|---|---|
-| Next.js apps (Driver App, CPO Portal) | Vercel or Render.com | Managed build/deploy, preview environments per PR |
-| Express backend | GitHub Actions (`deploy.yml`) | Deploys to EC2 |
+| App                                   | Pipeline                      | Target                                            |
+| ------------------------------------- | ----------------------------- | ------------------------------------------------- |
+| Next.js apps (Driver App, CPO Portal) | Vercel or Render.com          | Managed build/deploy, preview environments per PR |
+| Express backend                       | GitHub Actions (`deploy.yml`) | Deploys to EC2                                    |
 
 ### 4.4 Observability & Analytics
 
-| Concern | Tool | Notes |
-|---|---|---|
-| Logging, tracing, performance, error tracking, user telemetry | Sentry | Single tool covering both frontends + backend |
-| Product/behavioral analytics | Microsoft Clarity, Google Analytics 4 | Session replay, funnel/behavior analysis |
+| Concern                                                       | Tool                                  | Notes                                         |
+| ------------------------------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| Logging, tracing, performance, error tracking, user telemetry | Sentry                                | Single tool covering both frontends + backend |
+| Product/behavioral analytics                                  | Microsoft Clarity, Google Analytics 4 | Session replay, funnel/behavior analysis      |
 
 ---
 
@@ -350,9 +353,24 @@ erDiagram
 
 ```javascript
 const vehicle = await VehicleRepository.findById(vehicleId);
-const nearby = await ChargerRepository.findNearby({ lat, lng, radiusKm, vehicleType });
-const booking = await BookingRepository.create({ userId, chargerId, vehicleId, slotStart, slotEnd });
-const payment = await PaymentRepository.create({ bookingId, amount, gatewayPaymentId });
+const nearby = await ChargerRepository.findNearby({
+  lat,
+  lng,
+  radiusKm,
+  vehicleType,
+});
+const booking = await BookingRepository.create({
+  userId,
+  chargerId,
+  vehicleId,
+  slotStart,
+  slotEnd,
+});
+const payment = await PaymentRepository.create({
+  bookingId,
+  amount,
+  gatewayPaymentId,
+});
 await SessionRepository.markCompleted(sessionId, { finalAmount });
 await AcknowledgementRepository.record(stationId, operatorId, ackDate);
 await FavoriteRepository.add(userId, chargerId);
@@ -645,16 +663,16 @@ sequenceDiagram
 
 **MVP scale reality (per PRD V3):** 1 city, 10–20 stations, 3–5 CPOs. The design below is right-sized for that.
 
-| Concern | MVP approach | First scale trigger | Evolution path |
-|---|---|---|---|
-| Booking concurrency | Redis-based slot lock at booking creation to prevent double-booking | Popular stations/slots seeing contention | Move to a dedicated booking-conflict resolution service with stronger DB-level constraints |
-| Payment processing | Synchronous intent creation, async webhook confirmation | Payment volume growing beyond a single gateway's throughput comfort | Multi-gateway routing/failover |
-| Live status/session delivery | Long polling | Multi-city rollout, or need for sub-second session updates | WebSocket/SSE push |
-| Geo queries | Single Mongo Atlas cluster, `2dsphere` index | Query latency degrades as station count and concurrent search load grow | Read replicas; cached hot-tile results by geohash bucket |
-| Nearby-search caching | Redis cache keyed by geohash + filters, short TTL (30–60s) | Cache miss rate rising with more cities | Precompute per-city hot zones |
-| Backend compute | EC2 Auto Scaling Group behind API Gateway | Sustained CPU/mem pressure or multi-city launch | Scale-out policy on the ASG; split out Station Discovery and Booking as separate deployables first |
-| Accountability checks | Single daily scheduled job across all stations | Station count grows well past pilot scale | Shard the daily check by city/operator |
-| Multi-city | Not designed for yet | Explicit multi-city launch decision (PRD open question) | City as a first-class dimension in routing/config |
+| Concern                      | MVP approach                                                        | First scale trigger                                                     | Evolution path                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Booking concurrency          | Redis-based slot lock at booking creation to prevent double-booking | Popular stations/slots seeing contention                                | Move to a dedicated booking-conflict resolution service with stronger DB-level constraints         |
+| Payment processing           | Synchronous intent creation, async webhook confirmation             | Payment volume growing beyond a single gateway's throughput comfort     | Multi-gateway routing/failover                                                                     |
+| Live status/session delivery | Long polling                                                        | Multi-city rollout, or need for sub-second session updates              | WebSocket/SSE push                                                                                 |
+| Geo queries                  | Single Mongo Atlas cluster, `2dsphere` index                        | Query latency degrades as station count and concurrent search load grow | Read replicas; cached hot-tile results by geohash bucket                                           |
+| Nearby-search caching        | Redis cache keyed by geohash + filters, short TTL (30–60s)          | Cache miss rate rising with more cities                                 | Precompute per-city hot zones                                                                      |
+| Backend compute              | EC2 Auto Scaling Group behind API Gateway                           | Sustained CPU/mem pressure or multi-city launch                         | Scale-out policy on the ASG; split out Station Discovery and Booking as separate deployables first |
+| Accountability checks        | Single daily scheduled job across all stations                      | Station count grows well past pilot scale                               | Shard the daily check by city/operator                                                             |
+| Multi-city                   | Not designed for yet                                                | Explicit multi-city launch decision (PRD open question)                 | City as a first-class dimension in routing/config                                                  |
 
 ---
 
@@ -687,14 +705,14 @@ sequenceDiagram
 
 ## 10. Testing
 
-| Layer | Approach |
-|---|---|
-| Unit | Jest across Express services (booking slot logic, payment state machine, freshness bucketing, repository methods) and React components (both frontends) |
-| Integration | Supertest against the Express app with a test Mongo instance; verify API contracts in §5.4, including payment webhook handling with mocked gateway payloads |
-| Contract testing | Payment gateway webhook schema — since a malformed or replayed webhook is the highest-risk integration point now that CPO API sync is gone |
-| E2E | Playwright covering §6 flows: book-a-charger (incl. payment), start-charging, report-a-problem, daily-CPO-acknowledgement |
-| Load/perf | k6/Artillery against `/chargers/nearby` and `/bookings` (booking-conflict behavior under concurrent load specifically) |
-| Manual/UAT | Pilot-city test pass with real vehicles, real payments (sandboxed gateway), and real CPOs acknowledging daily before public MVP launch (PRD §21, Week 6-7) |
+| Layer            | Approach                                                                                                                                                    |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit             | Jest across Express services (booking slot logic, payment state machine, freshness bucketing, repository methods) and React components (both frontends)     |
+| Integration      | Supertest against the Express app with a test Mongo instance; verify API contracts in §5.4, including payment webhook handling with mocked gateway payloads |
+| Contract testing | Payment gateway webhook schema — since a malformed or replayed webhook is the highest-risk integration point now that CPO API sync is gone                  |
+| E2E              | Playwright covering §6 flows: book-a-charger (incl. payment), start-charging, report-a-problem, daily-CPO-acknowledgement                                   |
+| Load/perf        | k6/Artillery against `/chargers/nearby` and `/bookings` (booking-conflict behavior under concurrent load specifically)                                      |
+| Manual/UAT       | Pilot-city test pass with real vehicles, real payments (sandboxed gateway), and real CPOs acknowledging daily before public MVP launch (PRD §21, Week 6-7)  |
 
 ---
 

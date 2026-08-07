@@ -18,7 +18,6 @@ Prove that users will book and pay in-app if the app reliably answers three ques
 - Secondary: EV drivers planning short city trips.
 - Supply-side user: CPOs and station owners who need bookings, visibility, and a structured operating workflow.
 
-
 ## 5. Product principles
 
 - Trust first.
@@ -27,7 +26,6 @@ Prove that users will book and pay in-app if the app reliably answers three ques
 - Design for non-technical users as well as operators.
 - Keep driver workflows separate from CPO workflows.
 - Make accountability visible in the product.
-
 
 ## 6. Supported vehicle types
 
@@ -60,7 +58,6 @@ The app should map each vehicle type to connector compatibility, charging speed 
 - If a fault is reported, ask whether someone on site can confirm current working status.
 - Freshness label for live data such as 3 mins ago or 3 days ago.
 
-
 ### Should have
 
 - Save favorite chargers.
@@ -70,7 +67,6 @@ The app should map each vehicle type to connector compatibility, charging speed 
 - Receipt or invoice after payment.
 - Booking and session history.
 
-
 ### Not in MVP
 
 - Full multi-network wallet.
@@ -79,7 +75,6 @@ The app should map each vehicle type to connector compatibility, charging speed 
 - Multi-city rollout.
 - Complex loyalty or gamification.
 - Deep analytics dashboards for users.
-
 
 ## 8. Key user flows
 
@@ -96,42 +91,44 @@ Arrive at station -> authenticate via booking or QR -> start session -> track li
 Open charger detail -> tap report issue -> choose problem type -> submit timestamped report -> if the user is physically at location, confirm whether the charger is actually working -> charger status confidence updates.
 
 CPO Flow
+
 ## Chargefinder MVP Flow
 
 ### 1. CPO Registration & Login
 
-* CPO logs into the **Chargefinder CPO Portal**.
-* Only verified CPOs can access and manage their charging stations.
+- CPO logs into the **Chargefinder CPO Portal**.
+- Only verified CPOs can access and manage their charging stations.
 
 ### 2. Station Management (CPO Portal)
 
 The CPO creates and manages charging stations by:
 
-* Adding new charging stations.
-* Configuring charger details (connector type, power output, etc.).
-* Setting pricing.
-* Updating real-time availability.
-* Enabling/disabling maintenance mode.
-* Updating operating hours and amenities.
+- Adding new charging stations.
+- Configuring charger details (connector type, power output, etc.).
+- Setting pricing.
+- Updating real-time availability.
+- Enabling/disabling maintenance mode.
+- Updating operating hours and amenities.
 
 ### 3. Daily Station Acknowledgement
 
-* Every day, the CPO confirms that the station information is accurate.
-* If no acknowledgement is received within the configured period, the station can be flagged as **"Status Not Verified"** for EV users.
+- Every day, the CPO confirms that the station information is accurate.
+- If no acknowledgement is received within the configured period, the station can be flagged as **"Status Not Verified"** for EV users.
 
 ### 4. Station Status Updates
 
 Whenever something changes, the CPO updates:
 
-* Available / Occupied
-* Out of Service
-* Maintenance Mode
-* Pricing changes
-* Temporary closure
+- Available / Occupied
+- Out of Service
+- Maintenance Mode
+- Pricing changes
+- Temporary closure
 
 These updates are immediately reflected in the Chargefinder platform.
 
-###Flow1: 
+###Flow1:
+
 ## 9. Estimation logic
 
 The charger detail page should show an estimated result before booking. The estimate can include:
@@ -157,7 +154,6 @@ For MVP, use a rule-based calculator driven by charger power, connector type, an
 - Payment support.
 - Operating hours.
 
-
 ### Dynamic data
 
 - Available / in-use / unavailable status.
@@ -169,7 +165,6 @@ For MVP, use a rule-based calculator driven by charger power, connector type, an
 - Booking confirmation status.
 - Payment status.
 
-
 ### Data sources
 
 - Manual station data entry through the Chargefinder CPO portal.
@@ -177,14 +172,12 @@ For MVP, use a rule-based calculator driven by charger power, connector type, an
 - User reports for fault signals.
 - Operator confirmations through the portal.
 
-
 ### Data freshness rules
 
 - Show last updated time on every charger card and detail page.
 - Mark stale data explicitly when the last update is old.
 - Prefer operator-confirmed data over community-only data.
 - Decay old fault reports over time unless confirmed again.
-
 
 ## 11. CPO portal strategy
 
@@ -198,7 +191,6 @@ Chargefinder will provide a dedicated CPO portal instead of relying on external 
 - Make live pricing and availability visible in Chargefinder.
 - Keep the first rollout simple and fast.
 - Hold operators accountable for daily status updates.
-
 
 ### CPO portal flow
 
@@ -223,7 +215,6 @@ Chargefinder will provide a dedicated CPO portal instead of relying on external 
 - Maintenance or fault status.
 - Support contact for station issues.
 
-
 ### What Chargefinder gives the CPO
 
 - Visibility in the driver app.
@@ -232,7 +223,6 @@ Chargefinder will provide a dedicated CPO portal instead of relying on external 
 - A simple way to update station status.
 - Better trust signals from verified data.
 - Option to rank higher if they keep data fresh and compliant.
-
 
 ## 12. CPO accountability model
 
@@ -245,7 +235,6 @@ Every CPO must acknowledge station status at least once per day. If no acknowled
 - Repeated discrepancy lowers trust score.
 - Serious or repeated mismatch can lead to reduced ranking or temporary delisting.
 - Discrepancy history visible to internal ops and CPOs.
-
 
 ## 13. Driver UX strategy
 
@@ -271,7 +260,6 @@ CPO discoverability is both a sales motion and a supply growth loop. Chargefinde
 - Parking operators, malls, hotels, and campus property managers.
 - Partnerships with regional EV ecosystem companies.
 
-
 ### CPO pitch
 
 - More station visibility.
@@ -279,7 +267,6 @@ CPO discoverability is both a sales motion and a supply growth loop. Chargefinde
 - Higher utilization from live status and upfront pricing.
 - Less friction from broken or outdated station information.
 - A low-effort pilot in one city.
-
 
 ## 15. CPO integration model
 
@@ -292,7 +279,6 @@ For MVP, Chargefinder will use its own CPO portal as the only operator managemen
 - No external CPO system integration is required in MVP.
 - No dependency on OSPP, OSPI, or similar external backoffice systems.
 - Chargefinder owns the operator workflow and data freshness process.
-
 
 ### Operator portal must-have fields
 
@@ -307,7 +293,6 @@ For MVP, Chargefinder will use its own CPO portal as the only operator managemen
 - Payment settlement summary.
 - Station preview in the driver app.
 
-
 ## 16. Operator strategy
 
 Start with 3 to 5 pilot CPOs in one city. Prioritize operators who are open to using the portal daily and who can respond quickly during the pilot. Expand only after data quality, uptime reporting, and operator responsiveness are stable.
@@ -320,19 +305,16 @@ Start with 3 to 5 pilot CPOs in one city. Prioritize operators who are open to u
 - CPO subscription for discovery, station listings, and operator portal access.
 - Operator dashboard subscription for higher-value tools.
 
-
 ### Secondary revenue
 
 - Top placement fee for CPOs that want higher ranking in search results.
 - Featured station / sponsored slot placement.
 - Relevant vendor ads such as accessories, batteries, insurance, or EV services.
 
-
 ### Later revenue
 
 - Consumer premium subscription for ad-free usage, priority booking, or saved preferences.
 - Premium analytics for large operators or fleets.
-
 
 ### Avoid in MVP
 
@@ -357,7 +339,6 @@ Launch city-first in a dense EV market with enough charger supply to make bookin
 - Operator adoption: number of CPOs onboarded and actively updating data.
 - Data freshness: percentage of stations updated within the freshness threshold.
 
-
 ## 20. Risks
 
 - Stale or inaccurate live data.
@@ -366,7 +347,6 @@ Launch city-first in a dense EV market with enough charger supply to make bookin
 - Users losing trust after one bad charging experience.
 - Scope creep into full wallet, planning, or payments too early.
 - CPOs not adopting the portal or not updating data consistently.
-
 
 ## 21. MVP delivery plan
 
@@ -378,14 +358,12 @@ Launch city-first in a dense EV market with enough charger supply to make bookin
 - Design core user flows.
 - Define operator portal fields and onboarding steps.
 
-
 ### Week 3-5
 
 - Build login, vehicle setup, map, detail page, booking, and reporting.
 - Build the operator portal for manual station updates.
 - Add freshness timestamps and compatibility logic.
 - Add payment and booking confirmation flow.
-
 
 ### Week 6-7
 
@@ -394,12 +372,10 @@ Launch city-first in a dense EV market with enough charger supply to make bookin
 - Collect feedback on trust, data quality, usability, booking success, and payment friction.
 - Fix gaps in station data, portal flow, and report flow.
 
-
 ### Week 8
 
 - Launch public MVP in the chosen city.
 - Track activation, search volume, bookings, payment completion, and CPO update frequency.
-
 
 ## 22. Open questions
 
@@ -409,7 +385,3 @@ Launch city-first in a dense EV market with enough charger supply to make bookin
 - Will the MVP support booking-only or booking plus charging initiation?
 - What is the minimum useful pricing coverage threshold?
 - What penalty policy will be written into CPO agreements?
-
-
-
-
