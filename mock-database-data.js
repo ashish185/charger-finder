@@ -8,8 +8,8 @@
 use("dev");
 
 // ---------------------------------------------------------------------
-// Reference IDs (generated once, reused across collections below so the
-// documents actually link to each other like real data would)
+// MongoDB ObjectIds are generated once and reused across collections below so
+// the documents link to each other using native `_id` values.
 // ---------------------------------------------------------------------
 const user_id1 = ObjectId();
 const user_id2 = ObjectId();
@@ -31,6 +31,15 @@ const order_id2 = ObjectId();
 
 const payment_id1 = ObjectId();
 const payment_id2 = ObjectId();
+
+const review_id1 = ObjectId();
+const favorite_id1 = ObjectId();
+const favorite_id2 = ObjectId();
+const fault_report_id1 = ObjectId();
+const acknowledgement_id1 = ObjectId();
+const acknowledgement_id2 = ObjectId();
+const trust_score_id1 = ObjectId();
+const trust_score_id2 = ObjectId();
 
 // ---------------------------------------------------------------------
 // users
@@ -214,7 +223,7 @@ db.payments.insertMany([
 // ---------------------------------------------------------------------
 db.reviews.insertMany([
   {
-    _id: ObjectId(),
+    _id: review_id1,
     user_id: user_id1,
     charger_id: charger_id1,
     order_id: order_id1,
@@ -229,13 +238,13 @@ db.reviews.insertMany([
 // ---------------------------------------------------------------------
 db.favorites.insertMany([
   {
-    _id: ObjectId(),
+    _id: favorite_id1,
     user_id: user_id1,
     charger_id: charger_id1,
     created_at: ISODate("2026-08-05T09:36:00Z"),
   },
   {
-    _id: ObjectId(),
+    _id: favorite_id2,
     user_id: user_id2,
     charger_id: charger_id2,
     created_at: ISODate("2026-08-04T20:10:00Z"),
@@ -248,7 +257,7 @@ db.favorites.createIndex({ user_id: 1, charger_id: 1 }, { unique: true });
 // ---------------------------------------------------------------------
 db.fault_reports.insertMany([
   {
-    _id: ObjectId(),
+    _id: fault_report_id1,
     charger_id: charger_id3,
     station_id: station_id2,
     user_id: user_id2,
@@ -266,7 +275,7 @@ db.fault_reports.createIndex({ decay_at: 1 }, { expireAfterSeconds: 0 });
 // ---------------------------------------------------------------------
 db.acknowledgements.insertMany([
   {
-    _id: ObjectId(),
+    _id: acknowledgement_id1,
     station_id: station_id1,
     operator_id: operator_id1,
     ack_date: ISODate("2026-08-05T00:00:00Z"),
@@ -274,7 +283,7 @@ db.acknowledgements.insertMany([
     status: "ACKNOWLEDGED",
   },
   {
-    _id: ObjectId(),
+    _id: acknowledgement_id2,
     station_id: station_id2,
     operator_id: operator_id1,
     ack_date: ISODate("2026-08-05T00:00:00Z"),
@@ -288,7 +297,7 @@ db.acknowledgements.insertMany([
 // ---------------------------------------------------------------------
 db.trust_scores.insertMany([
   {
-    _id: ObjectId(),
+    _id: trust_score_id1,
     charger_id: charger_id1,
     confirmation_count_7d: 6,
     fault_count_7d: 0,
@@ -298,7 +307,7 @@ db.trust_scores.insertMany([
     score: 92,
   },
   {
-    _id: ObjectId(),
+    _id: trust_score_id2,
     charger_id: charger_id3,
     confirmation_count_7d: 1,
     fault_count_7d: 3,

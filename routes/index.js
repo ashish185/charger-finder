@@ -3,6 +3,7 @@ import { Router } from "express";
 import authRouter from "./auth.js";
 import healthCheckRouter from "./health-check.js";
 import chargersRouter from "./chargers.js";
+import stationsRouter from "./stations.js";
 
 const v1Router = Router();
 
@@ -13,5 +14,8 @@ v1Router.use("/api/v1", healthCheckRouter);
 
 // Charger discovery and details.
 v1Router.use("/api/v1/chargers", chargersRouter);
+
+// CPO portal station and charger management.
+v1Router.use("/api/v1/operator/stations", stationsRouter);
 
 export default v1Router;

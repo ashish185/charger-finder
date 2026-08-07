@@ -15,6 +15,7 @@ class ChargerRepository {
     const chargerMatch = {
       "charger.status": { $ne: "UNAVAILABLE" },
       "charger.fault_flag": false,
+      "charger.is_deleted": { $ne: true },
     };
 
     if (type && typeMap[type]) {
@@ -81,7 +82,10 @@ class ChargerRepository {
     if (!mongoose.Types.ObjectId.isValid(chargerId)) {
       return null;
     }
-    return Charger.findById(chargerId).lean();
+    return Charger.findOne({
+      _id: chargerId,
+      is_deleted: { $ne: true },
+    }).lean();
   }
 
   async estimate(chargerId, vehicleId) {

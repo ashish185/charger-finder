@@ -25,6 +25,33 @@ const chargerSchema = new mongoose.Schema(
     price_per_kwh: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    price_per_minute: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    price_effective_from: {
+      type: Date,
+      default: null,
+    },
+    vehicle_compatibility: [
+      {
+        type: String,
+        enum: ["2W_scooter", "2W_motorcycle", "3W", "4W"],
+      },
+    ],
+    pricing_history: [
+      {
+        price_per_kwh: { type: Number, min: 0 },
+        price_per_minute: { type: Number, min: 0, default: null },
+        effective_from: { type: Date, required: true },
+      },
+    ],
+    is_deleted: {
+      type: Boolean,
+      default: false,
     },
     last_updated_at: {
       type: Date,
