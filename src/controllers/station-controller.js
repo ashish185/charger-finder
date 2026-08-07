@@ -5,7 +5,6 @@ import {
   validatePricingPayload,
   validateStationPayload,
 } from "../validators/station-validator.js";
-import { Types } from "mongoose";
 
 function operatorId(req) {
   return (
