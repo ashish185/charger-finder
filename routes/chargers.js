@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // routes/chargers.js: Charger discovery, details, and estimate endpoints.
 import express from "express";
-import ChargerRepository from "../repositories/chargerRepository.js";
+import ChargerRepository from "../repositories/charger-repository.js";
 
 const chargersRouter = express.Router();
 
