@@ -17,15 +17,15 @@ const stationsRouter = express.Router();
 
 /**
  * @openapi
- * /operator/stations:
+ * /cpo/stations:
  *   post:
- *     tags: [Operator Stations]
- *     summary: Create a station owned by the authenticated operator.
+ *     tags: [Cpo Stations]
+ *     summary: Create a station owned by the authenticated cpo.
  *     responses:
  *       201: { description: Station created }
  *   get:
- *     tags: [Operator Stations]
- *     summary: List the authenticated operator's stations.
+ *     tags: [Cpo Stations]
+ *     summary: List the authenticated cpo's stations.
  *     parameters:
  *       - { name: status, in: query, schema: { type: string } }
  *       - { name: city, in: query, schema: { type: string } }
@@ -58,9 +58,9 @@ stationsRouter.route("/").post(createStation).get(listStations);
 
 /**
  * @openapi
- * /operator/stations/{stationId}:
+ * /cpo/stations/{stationId}:
  *   get:
- *     tags: [Operator Stations]
+ *     tags: [Cpo Stations]
  *     summary: Get an owned station and its chargers.
  *     parameters:
  *       - $ref: "#/components/parameters/StationId"
@@ -84,17 +84,17 @@ stationsRouter.route("/").post(createStation).get(listStations);
  *                             $ref: "#/components/schemas/Charger"
  *       404: { description: Station not found }
  *   put:
- *     tags: [Operator Stations]
+ *     tags: [Cpo Stations]
  *     summary: Update station metadata.
  *     parameters:
  *       - $ref: "#/components/parameters/StationId"
  *   patch:
- *     tags: [Operator Stations]
+ *     tags: [Cpo Stations]
  *     summary: Partially update station metadata.
  *     parameters:
  *       - $ref: "#/components/parameters/StationId"
  *   delete:
- *     tags: [Operator Stations]
+ *     tags: [Cpo Stations]
  *     summary: Soft-delete a station by setting its status to delisted.
  *     parameters:
  *       - $ref: "#/components/parameters/StationId"
