@@ -6,6 +6,7 @@
 **Related PRD:**
 [ChargeFinder_PRD_V3](./ChargeFinder_PRD_V3.md) _(product was renamed ChargeFinder → ChargeHub; PRD filenames/content are unchanged — treat "Chargefinder" references inside them as ChargeHub)_
 **DOC**: https://docs.google.com/document/d/1fVdLcuFMi2X1SHzRa_Z4A2ba-yWB0FKWc8RWbfKGwv4/edit?tab=t.0
+**UX**: https://stitch.withgoogle.com/projects/3324515615018009860
 
 ---
 

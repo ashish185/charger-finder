@@ -7,65 +7,77 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
-    // firstName: {
-    //   type: String,
-    //   required: true,
-    //   minLength: 4,
-    //   maxLength: 50,
-    // },
-    // lastName: {
-    //   type: String,
-    // },
-    // emailId: {
-    //   type: String,
-    //   lowercase: true,
-    //   required: true,
-    //   unique: true,
-    //   trim: true,
-    //   validate(value) {
-    //     if (!validator.isEmail(value)) {
-    //       throw new Error("Invalid email address: " + value);
-    //     }
-    //   },
-    // },
-    // password: {
-    //   type: String,
-    //   required: true,
-    //   validate(value) {
-    //     if (!validator.isStrongPassword(value)) {
-    //       throw new Error("Enter a Strong Password: " + value);
-    //     }
-    //   },
-    // },
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email address: " + value);
+        }
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("Enter a Strong Password");
+        }
+      },
+    },
+    vehicleMake: {
+      type: String,
+      required: true,
+    },
+    plugType: {
+      type: String,
+      enum: ["CCS", "NACS"],
+      required: true,
+    },
+    paymentMethods: [
+      {
+        type: { type: String, enum: ["CREDIT_CARD", "DIGITAL_WALLET"] },
+        provider: String,
+      },
+    ],
+    agreedToTerms: {
+      type: Boolean,
+      required: true,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-// userSchema.methods.getJWT = async function () {
-//   const user = this;
-//   const jwtSecureKey = process.env.JWT_SECRET;
-//   if (!jwtSecureKey) {
-//     throw new Error("JWT secure key is not defined in environment variables");
-//   }
-//   const token = await jwt.sign({ _id: user._id }, jwtSecureKey, {
-//     expiresIn: "7d",
-//   });
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const jwtSecureKey = process.env.JWT_SECRET;
+  if (!jwtSecureKey) {
+    throw new Error("JWT secure key is not defined in environment variables");
+  }
+  const token = jwt.sign({ _id: user._id }, jwtSecureKey, {
+    expiresIn: "7d",
+  });
+  return token;
+};
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
+  const passwordHash = user.password;
 
-//   return token;
-// };
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    passwordHash,
+  );
 
-// userSchema.methods.validatePassword = async function (passwordInputByUser) {
-//   const user = this;
-//   const passwordHash = user.password;
-
-//   const isPasswordValid = await bcrypt.compare(
-//     passwordInputByUser,
-//     passwordHash,
-//   );
-
-//   return isPasswordValid;
-// };
-
+  return isPasswordValid;
+};
 export default mongoose.model("User", userSchema);
