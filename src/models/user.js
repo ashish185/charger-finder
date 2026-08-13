@@ -14,33 +14,36 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
       lowercase: true,
       trim: true,
       validate(value) {
-        if (!validator.isEmail(value)) {
+        if (value && !validator.isEmail(value)) {
           throw new Error("Invalid email address: " + value);
         }
       },
     },
     password: {
       type: String,
-      required: true,
       validate(value) {
-        if (!validator.isStrongPassword(value)) {
+        if (value && !validator.isStrongPassword(value)) {
           throw new Error("Enter a Strong Password");
         }
       },
     },
-    vehicleMake: {
+    phoneNumber: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
+    },
+    vehicleMake: {
+      type: String,
     },
     plugType: {
       type: String,
       enum: ["CCS", "NACS"],
-      required: true,
     },
     paymentMethods: [
       {
@@ -50,7 +53,6 @@ const userSchema = new mongoose.Schema(
     ],
     agreedToTerms: {
       type: Boolean,
-      required: true,
     },
   },
   {

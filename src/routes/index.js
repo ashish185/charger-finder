@@ -9,7 +9,7 @@ import userRouter from "./user.js";
 const v1Router = Router();
 
 // User routes (CRUD + login)
-v1Router.use("/auth", authRouter);
+v1Router.use("/api/v1/auth", authRouter);
 
 v1Router.use("/api/v1", healthCheckRouter);
 

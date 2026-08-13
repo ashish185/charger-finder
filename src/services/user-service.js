@@ -13,9 +13,10 @@ function conflictError(message) {
 function userData(payload, hashedPassword) {
   return {
     fullName: payload.fullName.trim(),
-    email: payload.email.trim().toLowerCase(),
+    email: payload.email ? payload.email.trim().toLowerCase() : undefined,
     password: hashedPassword,
-    vehicleMake: payload.vehicleMake.trim(),
+    phoneNumber: payload.phoneNumber.trim(),
+    vehicleMake: payload.vehicleMake ? payload.vehicleMake.trim() : undefined,
     plugType: payload.plugType,
     paymentMethods: payload.paymentMethods || [],
     agreedToTerms: payload.agreedToTerms,
@@ -27,6 +28,7 @@ function userResponse(user) {
     userId: user._id,
     fullName: user.fullName,
     email: user.email,
+    phoneNumber: user.phoneNumber,
     vehicleMake: user.vehicleMake,
     plugType: user.plugType,
     paymentMethods: user.paymentMethods || [],
@@ -41,12 +43,20 @@ class UserService {
   }
 
   async register(payload) {
-    const existing = await this.userRepository.findByEmail(payload.email);
-    if (existing) {
+    const [existingEmail, existingPhone] = await Promise.all([
+      payload.email ? this.userRepository.findByEmail(payload.email) : null,
+      this.userRepository.findByPhoneNumber(payload.phoneNumber),
+    ]);
+    if (existingEmail) {
       throw conflictError("Email already registered");
     }
+    if (existingPhone) {
+      throw conflictError("Phone number already registered");
+    }
 
-    const hashedPassword = await bcrypt.hash(payload.password, SALT_ROUNDS);
+    const hashedPassword = payload.password
+      ? await bcrypt.hash(payload.password, SALT_ROUNDS)
+      : undefined;
 
     try {
       const user = await this.userRepository.create(

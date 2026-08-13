@@ -17,15 +17,12 @@ const userRouter = express.Router();
  *             type: object
  *             required:
  *               - fullName
- *               - email
- *               - password
- *               - vehicleMake
- *               - plugType
- *               - agreedToTerms
+ *               - phoneNumber
  *             properties:
  *               fullName: { type: string }
  *               email: { type: string, format: email }
  *               password: { type: string, format: password }
+ *               phoneNumber: { type: string }
  *               vehicleMake: { type: string }
  *               plugType: { type: string, enum: [CCS, NACS] }
  *               paymentMethods:
@@ -39,7 +36,7 @@ const userRouter = express.Router();
  *     responses:
  *       201: { description: User registered }
  *       400: { description: Validation error }
- *       409: { description: Email already registered }
+ *       409: { description: Email or phone number already registered }
  */
 userRouter.route("/").post(userController.registerUser);
 

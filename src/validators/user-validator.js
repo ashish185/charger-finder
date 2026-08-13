@@ -23,21 +23,35 @@ export function validateRegistrationPayload(payload) {
 
   requireNonEmptyString(payload.fullName, "fullName");
 
-  requireNonEmptyString(payload.email, "email");
-  if (!validator.isEmail(payload.email.trim())) {
-    throw validationError("email must be a valid email address");
+  requireNonEmptyString(payload.phoneNumber, "phoneNumber");
+  if (!validator.isMobilePhone(payload.phoneNumber.trim(), "any")) {
+    throw validationError("phoneNumber must be a valid phone number");
   }
 
-  requireNonEmptyString(payload.password, "password");
-  if (!validator.isStrongPassword(payload.password)) {
-    throw validationError(
-      "password must be at least 8 characters and include uppercase, lowercase, number, and symbol",
-    );
+  if (payload.email !== undefined) {
+    requireNonEmptyString(payload.email, "email");
+    if (!validator.isEmail(payload.email.trim())) {
+      throw validationError("email must be a valid email address");
+    }
   }
 
-  requireNonEmptyString(payload.vehicleMake, "vehicleMake");
+  if (payload.password !== undefined) {
+    requireNonEmptyString(payload.password, "password");
+    if (!validator.isStrongPassword(payload.password)) {
+      throw validationError(
+        "password must be at least 8 characters and include uppercase, lowercase, number, and symbol",
+      );
+    }
+  }
 
-  if (!PLUG_TYPES.includes(payload.plugType)) {
+  if (payload.vehicleMake !== undefined) {
+    requireNonEmptyString(payload.vehicleMake, "vehicleMake");
+  }
+
+  if (
+    payload.plugType !== undefined &&
+    !PLUG_TYPES.includes(payload.plugType)
+  ) {
     throw validationError(`plugType must be one of: ${PLUG_TYPES.join(", ")}`);
   }
 
@@ -61,7 +75,7 @@ export function validateRegistrationPayload(payload) {
     }
   }
 
-  if (payload.agreedToTerms !== true) {
+  if (payload.agreedToTerms !== undefined && payload.agreedToTerms !== true) {
     throw validationError("agreedToTerms must be true");
   }
 }

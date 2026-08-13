@@ -1,11 +1,11 @@
 /* eslint-disable no-undef */
 // routes/auth.js: Handles authentication-related endpoints like signup, login, logout, and profile.
 import express from "express";
-import { getAuth } from "firebase-admin/auth";
 import jwt from "jsonwebtoken";
+import { auth } from "../config/firebase.js";
+import UserRepository from "../repositories/user-repository.js";
 
 const authRouter = express.Router();
-
 /**
  * @openapi
  * /auth/otp/verify:
@@ -37,7 +37,7 @@ const authRouter = express.Router();
  *       400: { description: idToken is required }
  *       401: { description: Invalid or expired token }
  */
-authRouter.post("otp/verify", async (req, res) => {
+authRouter.post("/otp/verify", async (req, res) => {
   const { idToken } = req.body;
 
   if (!idToken) {
@@ -45,11 +45,12 @@ authRouter.post("otp/verify", async (req, res) => {
   }
 
   try {
-    const decoded = await getAuth().verifyIdToken(idToken);
+    const decoded = await auth.verifyIdToken(idToken);
     const { uid, phone_number } = decoded;
 
+    const userRepository = new UserRepository();
     // Look up or create your own user record here
-    const user = await UserRepository.findOrCreateByPhone(phone_number);
+    const user = await userRepository.findByPhoneNumber(phone_number);
 
     // Issue your own session token (recommended over trusting Firebase token on every request)
     const sessionToken = jwt.sign(

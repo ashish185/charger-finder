@@ -1,15 +1,13 @@
 import js from "@eslint/js";
+import importPlugin from "eslint-plugin-import";
 
 export default [
-  // 1. Recommended Base Settings
   js.configs.recommended,
 
   {
-    // 2. Files to include/exclude
     files: ["**/*.js", "**/*.jsx"],
     ignores: ["dist/**", "node_modules/**"],
 
-    // 3. Environment & Global Variables
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -20,9 +18,12 @@ export default [
       },
     },
 
-    // 4. Custom Rules
+    plugins: {
+      import: importPlugin,
+    },
+
     rules: {
-      // Logic & Safety Rules
+      // Logic & Safety
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-undef": "error",
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -32,6 +33,9 @@ export default [
       "no-var": "error",
       "prefer-const": "error",
       curly: ["error", "all"],
+
+      // Import validation
+      "import/no-unresolved": "error",
     },
   },
 ];

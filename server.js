@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import router from "./src/routes/index.js";
-import connectToDatabase from "./config/database.js";
+import connectToDatabase from "./src/config/database.js";
 import cookieParser from "cookie-parser";
 import swaggerSpec from "./swagger.js";
 import swaggerUi from "swagger-ui-express";
