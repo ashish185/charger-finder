@@ -132,11 +132,38 @@ function chargerResponse(charger) {
   };
 }
 
+function nearbyStationResponse(station) {
+  return {
+    stationId: station._id,
+    name: station.name,
+    address: station.address,
+    location: {
+      lat: station.location.coordinates[1],
+      lng: station.location.coordinates[0],
+    },
+    amenities: station.amenities || [],
+    operatingHours: {
+      open: station.operating_hours?.open,
+      close: station.operating_hours?.close,
+      is24x7: station.operating_hours?.is_24x7,
+    },
+    occupancy: station.occupancy || [],
+    distanceKm: station.distanceKm,
+    totalChargers: station.totalChargers,
+    availableChargers: station.availableChargers,
+  };
+}
+
 class StationService {
   constructor(stationRepository, chargerRepository) {
     this.stationRepository = stationRepository || new StationRepository();
     this.chargerRepository =
       chargerRepository || new StationChargerRepository();
+  }
+
+  async findNearby(query) {
+    const stations = await this.stationRepository.findNearby(query);
+    return stations.map(nearbyStationResponse);
   }
 
   async create(operatorId, payload) {

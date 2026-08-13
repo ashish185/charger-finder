@@ -3,7 +3,8 @@ import { Router } from "express";
 import authRouter from "./auth.js";
 import healthCheckRouter from "./health-check.js";
 import chargersRouter from "./chargers.js";
-import stationsRouter from "./cpo-stations.js";
+import cpoStationsRouter from "./cpo-stations.js";
+import stationsRouter from "./stations.js";
 import userRouter from "./user.js";
 
 const v1Router = Router();
@@ -17,7 +18,10 @@ v1Router.use("/api/v1", healthCheckRouter);
 v1Router.use("/api/v1/chargers", chargersRouter);
 
 // CPO portal station and charger management.
-v1Router.use("/api/v1/cpo/stations", stationsRouter);
+v1Router.use("/api/v1/cpo/stations", cpoStationsRouter);
+
+// Public station discovery (nearby stations with available charger counts).
+v1Router.use("/api/v1/stations", stationsRouter);
 
 // User registration and profile.
 v1Router.use("/api/v1/user", userRouter);

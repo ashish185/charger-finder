@@ -1,3 +1,10 @@
+import {
+  CHARGER_STATUSES,
+  CHARGING_TYPES,
+  CONNECTORS,
+  VEHICLE_SIZE,
+} from "../constants.js";
+
 const CONNECTOR_TYPES = [
   "CCS2",
   "CHAdeMO",
@@ -167,4 +174,70 @@ export function validatePricingPayload(payload) {
   ) {
     throw validationError("effectiveFrom must be a valid timestamp");
   }
+}
+
+function toArray(value) {
+  if (value === undefined) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
+function ensureEnumValues(values, allowed, name) {
+  for (const value of values) {
+    if (!allowed.includes(value)) {
+      throw validationError(`${name} must be one of: ${allowed.join(", ")}`);
+    }
+  }
+}
+
+export function validateNearbyStationsQuery(query) {
+  const { lat, lng } = query;
+  if ((lat === undefined) !== (lng === undefined)) {
+    throw validationError("lat and lng must be provided together");
+  }
+  if (
+    lat !== undefined &&
+    (!Number.isFinite(Number(lat)) || Number(lat) < -90 || Number(lat) > 90)
+  ) {
+    throw validationError("lat must be a valid latitude");
+  }
+  if (
+    lng !== undefined &&
+    (!Number.isFinite(Number(lng)) || Number(lng) < -180 || Number(lng) > 180)
+  ) {
+    throw validationError("lng must be a valid longitude");
+  }
+  if (
+    query.radiusKm !== undefined &&
+    (!Number.isFinite(Number(query.radiusKm)) || Number(query.radiusKm) <= 0)
+  ) {
+    throw validationError("radiusKm must be a positive number");
+  }
+
+  const connectorTypes = toArray(query.connectorType);
+  ensureEnumValues(connectorTypes, Object.values(CONNECTORS), "connectorType");
+
+  const chargingTypes = toArray(query.chargingType);
+  ensureEnumValues(
+    chargingTypes,
+    Object.values(CHARGING_TYPES),
+    "chargingType",
+  );
+
+  const statuses = toArray(query.chargerStatus);
+  ensureEnumValues(statuses, Object.values(CHARGER_STATUSES), "chargerStatus");
+
+  const occupancy = toArray(query.occupancy);
+  ensureEnumValues(occupancy, Object.values(VEHICLE_SIZE), "occupancy");
+
+  return {
+    lat: lat !== undefined ? Number(lat) : undefined,
+    lng: lng !== undefined ? Number(lng) : undefined,
+    radiusKm: query.radiusKm !== undefined ? Number(query.radiusKm) : undefined,
+    connectorTypes,
+    chargingTypes,
+    statuses,
+    occupancy,
+  };
 }

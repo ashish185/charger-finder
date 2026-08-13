@@ -129,6 +129,8 @@ db.stations.insertMany([
     location: { type: "Point", coordinates: [72.8296, 19.1358] },
     amenities: ["Parking", "Restroom", "Cafe"],
     operating_hours: "06:00-23:00",
+    occupancy: ["two_wheeler_scooter", "four_wheeler_hatchback"],
+    status: "open",
   },
   {
     _id: station_id2,
@@ -138,6 +140,8 @@ db.stations.insertMany([
     location: { type: "Point", coordinates: [72.8656, 19.0668] },
     amenities: ["Parking", "24x7 Security"],
     operating_hours: "00:00-23:59",
+    occupancy: ["four_wheeler_sedan", "four_wheeler_suv", "three_wheeler"],
+    status: "fully_booked",
   },
 ]);
 // index used by ChargerAvailabilityService (nearby queries reference station location)
@@ -153,34 +157,85 @@ db.chargers.insertMany([
     _id: charger_id1,
     station_id: station_id1,
     connector_type: "Type2",
+    charging_type: "AC",
+    connector: "Type 2",
     max_power_kw: 7.4,
     status: "AVAILABLE",
     price_per_kwh: 18.5,
     last_updated_at: ISODate("2026-08-05T06:10:00Z"),
     last_updated_source: "CPO_PORTAL",
     fault_flag: false,
+    // order_id1 occupies the 09:00-09:30 slot below (status COMPLETED)
+    availability_slots: [
+      {
+        start: ISODate("2026-08-05T09:00:00Z"),
+        end: ISODate("2026-08-05T09:30:00Z"),
+        status: "BOOKED",
+        order_id: order_id1,
+      },
+      {
+        start: ISODate("2026-08-05T09:30:00Z"),
+        end: ISODate("2026-08-05T10:00:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+      {
+        start: ISODate("2026-08-05T10:00:00Z"),
+        end: ISODate("2026-08-05T10:30:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+    ],
   },
   {
     _id: charger_id2,
     station_id: station_id1,
     connector_type: "CCS2",
+    charging_type: "DC",
+    connector: "CCS2",
     max_power_kw: 50,
     status: "IN_USE",
     price_per_kwh: 22.0,
     last_updated_at: ISODate("2026-08-05T07:45:00Z"),
     last_updated_source: "CPO_PORTAL",
     fault_flag: false,
+    availability_slots: [
+      {
+        start: ISODate("2026-08-05T07:45:00Z"),
+        end: ISODate("2026-08-05T08:30:00Z"),
+        status: "BOOKED",
+        order_id: null,
+      },
+      {
+        start: ISODate("2026-08-05T08:30:00Z"),
+        end: ISODate("2026-08-05T09:00:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+    ],
   },
   {
     _id: charger_id3,
     station_id: station_id2,
     connector_type: "CCS2",
+    charging_type: "DC",
+    connector: "CCS2",
     max_power_kw: 60,
     status: "UNAVAILABLE",
     price_per_kwh: 21.0,
     last_updated_at: ISODate("2026-08-04T18:00:00Z"),
     last_updated_source: "ADMIN",
     fault_flag: true,
+    // order_id2 originally booked 11:00-11:45 but was REFUNDED, so the slot is
+    // AVAILABLE again; charger itself is UNAVAILABLE due to the open fault report
+    availability_slots: [
+      {
+        start: ISODate("2026-08-06T11:00:00Z"),
+        end: ISODate("2026-08-06T11:45:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+    ],
   },
 ]);
 

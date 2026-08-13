@@ -2,9 +2,10 @@
 import Charger from "../models/charger.js";
 import Station from "../models/station.js";
 import mongoose from "mongoose";
+import { CHARGING_TYPES, CONNECTORS } from "../constants.js";
 
 class ChargerRepository {
-  async findNearby({ lat, lng, radiusKm, vehicleId, type }) {
+  async findNearby({ lat, lng, radiusKm, type, chargingType, connector }) {
     const meters = Number(radiusKm) * 1000;
 
     const typeMap = {
@@ -18,8 +19,25 @@ class ChargerRepository {
       "charger.is_deleted": { $ne: true },
     };
 
-    if (type && typeMap[type]) {
-      chargerMatch["charger.connector_type"] = typeMap[type];
+    const connectorTypes = (type || [])
+      .map((value) => typeMap[value])
+      .filter(Boolean);
+    if (connectorTypes.length > 0) {
+      chargerMatch["charger.connector_type"] = { $in: connectorTypes };
+    }
+
+    const chargingTypes = (chargingType || []).filter((value) =>
+      Object.values(CHARGING_TYPES).includes(value),
+    );
+    if (chargingTypes.length > 0) {
+      chargerMatch["charger.charging_type"] = { $in: chargingTypes };
+    }
+
+    const connectors = (connector || []).filter((value) =>
+      Object.values(CONNECTORS).includes(value),
+    );
+    if (connectors.length > 0) {
+      chargerMatch["charger.connector"] = { $in: connectors };
     }
 
     const pipeline = [

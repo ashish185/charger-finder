@@ -30,6 +30,7 @@ const stationSchema = new mongoose.Schema(
       },
     },
     amenities: [String],
+    occupancy: [String],
     operating_hours: {
       open: { type: String, trim: true },
       close: { type: String, trim: true },

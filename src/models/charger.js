@@ -13,6 +13,14 @@ const chargerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    charging_type: {
+      type: String,
+      trim: true,
+    },
+    connector: {
+      type: String,
+      trim: true,
+    },
     max_power_kw: {
       type: Number,
       required: true,

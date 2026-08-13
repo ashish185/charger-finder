@@ -5,6 +5,13 @@ import ChargerRepository from "../repositories/charger-repository.js";
 
 const chargersRouter = express.Router();
 
+function toArray(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
 /**
  * @openapi
  * /chargers/nearby:
@@ -28,17 +35,36 @@ const chargersRouter = express.Router();
  *         required: true
  *         schema:
  *           type: number
- *       - name: vehicleId
- *         in: query
- *         required: true
- *         schema:
- *           type: string
  *       - name: type
  *         in: query
  *         required: false
+ *         style: form
+ *         explode: true
  *         schema:
- *           type: string
- *           enum: [2W, 4W]
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [2W, 4W]
+ *       - name: chargingType
+ *         in: query
+ *         required: false
+ *         style: form
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [AC, DC]
+ *       - name: connector
+ *         in: query
+ *         required: false
+ *         style: form
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: ["Type 2", CCS2]
  *     responses:
  *       200:
  *         description: Nearby chargers list.
@@ -51,13 +77,13 @@ const chargersRouter = express.Router();
  */
 chargersRouter.get("/nearby", async (req, res, next) => {
   try {
-    const { lat, lng, radiusKm, vehicleId, type } = req.query;
+    const { lat, lng, radiusKm, type, chargingType, connector } = req.query;
 
-    if (!lat || !lng || !radiusKm || !vehicleId) {
+    if (!lat || !lng || !radiusKm) {
       return res.status(400).json({
         error: {
           code: "VALIDATION_ERROR",
-          message: "lat, lng, radiusKm, and vehicleId are required",
+          message: "lat, lng, and radiusKm are required",
         },
       });
     }
@@ -66,8 +92,9 @@ chargersRouter.get("/nearby", async (req, res, next) => {
       lat,
       lng,
       radiusKm,
-      vehicleId,
-      type,
+      type: toArray(type),
+      chargingType: toArray(chargingType),
+      connector: toArray(connector),
     });
 
     res.json(nearby);

@@ -1,6 +1,7 @@
 import stationService from "../services/station-service.js";
 import {
   validateChargerPayload,
+  validateNearbyStationsQuery,
   validatePagination,
   validatePricingPayload,
   validateStationPayload,
@@ -31,6 +32,12 @@ function handler(callback) {
     }
   };
 }
+
+export const findNearbyStations = handler(async (req, res) => {
+  const query = validateNearbyStationsQuery(req.query);
+  const data = await stationService.findNearby(query);
+  res.json({ success: true, data });
+});
 
 export const createStation = handler(async (req, res) => {
   validateStationPayload(req.body);
