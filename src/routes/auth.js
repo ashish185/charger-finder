@@ -6,6 +6,37 @@ import jwt from "jsonwebtoken";
 
 const authRouter = express.Router();
 
+/**
+ * @openapi
+ * /auth/otp/verify:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verify a Firebase phone OTP ID token and issue a session token.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *             properties:
+ *               idToken: { type: string, description: Firebase ID token obtained after OTP verification }
+ *     responses:
+ *       200:
+ *         description: OTP verified, session token issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 sessionToken: { type: string }
+ *                 phone: { type: string }
+ *                 user: { type: object }
+ *       400: { description: idToken is required }
+ *       401: { description: Invalid or expired token }
+ */
 authRouter.post("otp/verify", async (req, res) => {
   const { idToken } = req.body;
 
@@ -18,7 +49,7 @@ authRouter.post("otp/verify", async (req, res) => {
     const { uid, phone_number } = decoded;
 
     // Look up or create your own user record here
-    // e.g. const user = await UserRepository.findOrCreateByPhone(phone_number);
+    const user = await UserRepository.findOrCreateByPhone(phone_number);
 
     // Issue your own session token (recommended over trusting Firebase token on every request)
     const sessionToken = jwt.sign(
@@ -27,7 +58,7 @@ authRouter.post("otp/verify", async (req, res) => {
       { expiresIn: "7d" },
     );
 
-    res.json({ success: true, sessionToken, phone: phone_number });
+    res.json({ success: true, sessionToken, phone: phone_number, user });
   } catch (err) {
     console.error("Token verification failed:", err);
     res.status(401).json({ error: "Invalid or expired token" });

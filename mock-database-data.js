@@ -13,6 +13,8 @@ use("dev");
 // ---------------------------------------------------------------------
 const user_id1 = ObjectId();
 const user_id2 = ObjectId();
+const user_id3 = ObjectId();
+const user_id4 = ObjectId();
 
 const vehicle_id1 = ObjectId();
 const vehicle_id2 = ObjectId();
@@ -49,11 +51,29 @@ db.users.insertMany([
     _id: user_id1,
     phone: "+919876543210",
     created_at: ISODate("2026-06-01T08:15:00Z"),
+    full_name: "Chirag Goel",
+    role: ["customer"],
   },
   {
     _id: user_id2,
     phone: "+919123456780",
     created_at: ISODate("2026-06-03T14:40:00Z"),
+    full_name: "Arun Sharma",
+    role: ["operator"],
+  },
+  {
+    _id: user_id3,
+    phone: "+919012345678",
+    created_at: ISODate("2026-06-03T14:40:00Z"),
+    full_name: "Ashish Singhal",
+    role: ["admin"],
+  },
+  {
+    _id: user_id4,
+    phone: "+919012345679",
+    created_at: ISODate("2026-06-03T14:40:00Z"),
+    full_name: "Ashwini",
+    role: ["pricing_manager"],
   },
 ]);
 
@@ -80,13 +100,20 @@ db.vehicles.insertMany([
 ]);
 
 // ---------------------------------------------------------------------
-// operators  (CPOs)
+// operators  (CPOs — registered independently via POST /api/v1/cpo,
+// matches src/models/operator.js; phone number lives on the linked
+// users doc with role: ["cpo"], not duplicated here)
 // ---------------------------------------------------------------------
 db.operators.insertMany([
   {
     _id: operator_id1,
-    name: "GreenVolt Charging Pvt Ltd",
-    contact: "ops@greenvolt.in",
+    user_id: user_id2,
+    business_name: "GreenVolt Charging Pvt Ltd",
+    full_name: "Arun Sharma",
+    gst_number: "27AAECG1234F1Z5",
+    agreed_to_terms: true,
+    created_at: ISODate("2026-06-03T14:45:00Z"),
+    updated_at: ISODate("2026-06-03T14:45:00Z"),
   },
 ]);
 
