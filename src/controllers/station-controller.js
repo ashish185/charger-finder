@@ -59,6 +59,11 @@ export const getStation = handler(async (req, res) => {
   res.json({ success: true, data });
 });
 
+export const getStationCharges = handler(async (req, res) => {
+  const data = await stationService.listCharges(req.params.stationId);
+  res.json({ success: true, data });
+});
+
 export const updateStation = handler(async (req, res) => {
   validateStationPayload(req.body, { partial: true });
   const data = await stationService.update(

@@ -213,6 +213,16 @@ class StationService {
     };
   }
 
+  async listCharges(stationId) {
+    ensureId(stationId, "stationId");
+    const station = await this.stationRepository.findById(stationId);
+    if (!station) {
+      throw notFound("Station not found");
+    }
+    const chargers = await this.chargerRepository.findByStation(stationId);
+    return chargers.map(chargerResponse);
+  }
+
   async update(operatorId, stationId, payload) {
     ensureId(stationId, "stationId");
     const station = await this.stationRepository.updateForOperator(
