@@ -16,8 +16,6 @@ function userData(payload, hashedPassword) {
     email: payload.email ? payload.email.trim().toLowerCase() : undefined,
     password: hashedPassword,
     phoneNumber: payload.phoneNumber.trim(),
-    vehicleMake: payload.vehicleMake ? payload.vehicleMake.trim() : undefined,
-    plugType: payload.plugType,
     paymentMethods: payload.paymentMethods || [],
     agreedToTerms: payload.agreedToTerms,
   };
@@ -29,8 +27,6 @@ function userResponse(user) {
     fullName: user.fullName,
     email: user.email,
     phoneNumber: user.phoneNumber,
-    vehicleMake: user.vehicleMake,
-    plugType: user.plugType,
     paymentMethods: user.paymentMethods || [],
     agreedToTerms: user.agreedToTerms,
     createdAt: user.createdAt,

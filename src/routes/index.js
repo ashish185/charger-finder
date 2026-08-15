@@ -7,6 +7,7 @@ import cpoStationsRouter from "./cpo-stations.js";
 import pricingRouter from "./pricing.js";
 import stationsRouter from "./stations.js";
 import userRouter from "./user.js";
+import vehiclesRouter from "./vehicles.js";
 
 const v1Router = Router();
 
@@ -29,5 +30,8 @@ v1Router.use("/api/v1/stations", stationsRouter);
 
 // User registration and profile.
 v1Router.use("/api/v1/user", userRouter);
+
+// User's vehicle garage.
+v1Router.use("/api/v1/vehicles", vehiclesRouter);
 
 export default v1Router;

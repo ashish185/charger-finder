@@ -23,8 +23,6 @@ const userRouter = express.Router();
  *               email: { type: string, format: email }
  *               password: { type: string, format: password }
  *               phoneNumber: { type: string }
- *               vehicleMake: { type: string }
- *               plugType: { type: string, enum: [CCS, NACS] }
  *               paymentMethods:
  *                 type: array
  *                 items:

@@ -38,13 +38,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    vehicleMake: {
-      type: String,
-    },
-    plugType: {
-      type: String,
-      enum: ["CCS", "NACS"],
-    },
     paymentMethods: [
       {
         type: { type: String, enum: ["CREDIT_CARD", "DIGITAL_WALLET"] },

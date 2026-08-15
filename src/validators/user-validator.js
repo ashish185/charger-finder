@@ -1,6 +1,5 @@
 import validator from "validator";
 
-const PLUG_TYPES = ["CCS", "NACS"];
 const PAYMENT_TYPES = ["CREDIT_CARD", "DIGITAL_WALLET"];
 
 function validationError(message) {
@@ -42,17 +41,6 @@ export function validateRegistrationPayload(payload) {
         "password must be at least 8 characters and include uppercase, lowercase, number, and symbol",
       );
     }
-  }
-
-  if (payload.vehicleMake !== undefined) {
-    requireNonEmptyString(payload.vehicleMake, "vehicleMake");
-  }
-
-  if (
-    payload.plugType !== undefined &&
-    !PLUG_TYPES.includes(payload.plugType)
-  ) {
-    throw validationError(`plugType must be one of: ${PLUG_TYPES.join(", ")}`);
   }
 
   if (payload.paymentMethods !== undefined) {
