@@ -5,25 +5,8 @@
 
 import jwt from "jsonwebtoken";
 
-export function getTokenFromRequest(req) {
-  return req.cookies?.token || null;
-  // const authHeader = req.headers.authorization || "";
-
-  // const cookieHeader = req.headers.cookie || "";
-  // const tokenCookie = cookieHeader
-  //   .split(";")
-  //   .map((cookie) => cookie.trim())
-  //   .find((cookie) => cookie.startsWith("token="));
-
-  // if (tokenCookie) {
-  //   return decodeURIComponent(tokenCookie.slice("token=".length));
-  // }
-
-  // return null;
-}
-
 export function requireAuth(req, res, next) {
-  const token = getTokenFromRequest(req);
+  const token = req.cookies?.token || null;
 
   if (!token) {
     return res.status(401).json({
@@ -39,4 +22,13 @@ export function requireAuth(req, res, next) {
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
+}
+
+export function requireRole(...allowedRoles) {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user?.role)) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    next();
+  };
 }

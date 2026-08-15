@@ -1,5 +1,19 @@
 # Project Instructions
 
+EV Charger Finder application.
+
+Frontend:
+
+- React Native
+- Expo
+
+Backend:
+
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+
 ## Tech Stack
 
 - Node.js
@@ -13,12 +27,19 @@
 - Follow existing project patterns.
 - Do not introduce unnecessary dependencies.
 
-## Architecture
+## Backend Architecture
 
-- Controllers handle HTTP requests.
-- Services contain business logic.
-- Repositories handle database operations.
-- Keep controllers thin.
+Follow:
+
+Route
+↓
+Controller
+↓
+Service
+↓
+Repository
+↓
+Model
 
 ## Before Making Changes
 
@@ -35,3 +56,15 @@
 - Do not commit changes unless explicitly asked.
 - Do not modify `.env` files.
 - Never expose secrets or API keys.
+
+## Coding Rules
+
+- Use ES Modules.
+- Use async/await.
+- Do not use callbacks.
+- Use camelCase for variables.
+- Use PascalCase for classes/components.
+- Do not put business logic in controllers.
+- Do not access MongoDB directly from controllers.
+- Snakecase for db values
+- Controller, Service, Repository all must be classes

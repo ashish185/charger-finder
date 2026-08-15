@@ -28,6 +28,13 @@ const charger_id1 = ObjectId();
 const charger_id2 = ObjectId();
 const charger_id3 = ObjectId();
 
+const slot_id1 = ObjectId();
+const slot_id2 = ObjectId();
+const slot_id3 = ObjectId();
+const slot_id4 = ObjectId();
+const slot_id5 = ObjectId();
+const slot_id6 = ObjectId();
+
 const order_id1 = ObjectId();
 const order_id2 = ObjectId();
 
@@ -42,6 +49,10 @@ const acknowledgement_id1 = ObjectId();
 const acknowledgement_id2 = ObjectId();
 const trust_score_id1 = ObjectId();
 const trust_score_id2 = ObjectId();
+
+const pricing_id1 = ObjectId();
+const pricing_id2 = ObjectId();
+const pricing_id3 = ObjectId();
 
 // ---------------------------------------------------------------------
 // users
@@ -168,18 +179,21 @@ db.chargers.insertMany([
     // order_id1 occupies the 09:00-09:30 slot below (status COMPLETED)
     availability_slots: [
       {
+        _id: slot_id1,
         start: ISODate("2026-08-05T09:00:00Z"),
         end: ISODate("2026-08-05T09:30:00Z"),
         status: "BOOKED",
         order_id: order_id1,
       },
       {
+        _id: slot_id2,
         start: ISODate("2026-08-05T09:30:00Z"),
         end: ISODate("2026-08-05T10:00:00Z"),
         status: "AVAILABLE",
         order_id: null,
       },
       {
+        _id: slot_id3,
         start: ISODate("2026-08-05T10:00:00Z"),
         end: ISODate("2026-08-05T10:30:00Z"),
         status: "AVAILABLE",
@@ -201,12 +215,14 @@ db.chargers.insertMany([
     fault_flag: false,
     availability_slots: [
       {
+        _id: slot_id4,
         start: ISODate("2026-08-05T07:45:00Z"),
         end: ISODate("2026-08-05T08:30:00Z"),
         status: "BOOKED",
         order_id: null,
       },
       {
+        _id: slot_id5,
         start: ISODate("2026-08-05T08:30:00Z"),
         end: ISODate("2026-08-05T09:00:00Z"),
         status: "AVAILABLE",
@@ -230,6 +246,7 @@ db.chargers.insertMany([
     // AVAILABLE again; charger itself is UNAVAILABLE due to the open fault report
     availability_slots: [
       {
+        _id: slot_id6,
         start: ISODate("2026-08-06T11:00:00Z"),
         end: ISODate("2026-08-06T11:45:00Z"),
         status: "AVAILABLE",
@@ -400,6 +417,43 @@ db.trust_scores.insertMany([
   },
 ]);
 
+// ---------------------------------------------------------------------
+// pricing  (one active pricing config per charger)
+// ---------------------------------------------------------------------
+db.pricing.insertMany([
+  {
+    _id: pricing_id1,
+    charger_id: charger_id1,
+    rate_per_kwh: 18.5,
+    reservation_fee: 20,
+    platform_fee: 10,
+    charging_efficiency: 0.9,
+    buffer_percentage: 10,
+    is_active: true,
+  },
+  {
+    _id: pricing_id2,
+    charger_id: charger_id2,
+    rate_per_kwh: 22.0,
+    reservation_fee: 20,
+    platform_fee: 10,
+    charging_efficiency: 0.9,
+    buffer_percentage: 10,
+    is_active: true,
+  },
+  {
+    _id: pricing_id3,
+    charger_id: charger_id3,
+    rate_per_kwh: 21.0,
+    reservation_fee: 20,
+    platform_fee: 10,
+    charging_efficiency: 0.9,
+    buffer_percentage: 10,
+    is_active: true,
+  },
+]);
+db.pricing.createIndex({ charger_id: 1 }, { unique: true });
+
 print(
-  "ChargeHub mock data seeded: users, vehicles, operators, stations, chargers, orders, payments, reviews, favorites, fault_reports, acknowledgements, trust_scores",
+  "ChargeHub mock data seeded: users, vehicles, operators, stations, chargers, orders, payments, reviews, favorites, fault_reports, acknowledgements, trust_scores, pricing",
 );

@@ -1,9 +1,6 @@
 // routes/stations.js: Public station discovery endpoints.
 import express from "express";
-import {
-  findNearbyStations,
-  getStationCharges,
-} from "../controllers/station-controller.js";
+import stationController from "../controllers/station-controller.js";
 
 const stationsRouter = express.Router();
 
@@ -93,7 +90,7 @@ const stationsRouter = express.Router();
  *                     type: object
  *       400: { description: Validation error }
  */
-stationsRouter.get("/nearby", findNearbyStations);
+stationsRouter.get("/nearby", stationController.findNearbyStations);
 
 /**
  * @openapi
@@ -124,6 +121,6 @@ stationsRouter.get("/nearby", findNearbyStations);
  *       400: { description: Validation error }
  *       404: { description: Station not found }
  */
-stationsRouter.get("/:stationId/chargers", getStationCharges);
+stationsRouter.get("/:stationId/chargers", stationController.getStationCharges);
 
 export default stationsRouter;

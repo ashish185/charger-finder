@@ -1,17 +1,5 @@
 import express from "express";
-import {
-  createCharger,
-  createStation,
-  deleteCharger,
-  deleteStation,
-  getStation,
-  listStations,
-  updateAmenities,
-  updateCharger,
-  updateOperatingHours,
-  updatePricing,
-  updateStation,
-} from "../controllers/station-controller.js";
+import stationController from "../controllers/station-controller.js";
 
 const stationsRouter = express.Router();
 
@@ -54,7 +42,10 @@ const stationsRouter = express.Router();
  *                         limit: { type: integer, example: 20 }
  *                         total: { type: integer, example: 2 }
  */
-stationsRouter.route("/").post(createStation).get(listStations);
+stationsRouter
+  .route("/")
+  .post(stationController.createStation)
+  .get(stationController.listStations);
 
 /**
  * @openapi
@@ -101,16 +92,28 @@ stationsRouter.route("/").post(createStation).get(listStations);
  */
 stationsRouter
   .route("/:stationId")
-  .get(getStation)
-  .put(updateStation)
-  .patch(updateStation)
-  .delete(deleteStation);
+  .get(stationController.getStation)
+  .put(stationController.updateStation)
+  .patch(stationController.updateStation)
+  .delete(stationController.deleteStation);
 
-stationsRouter.post("/:stationId/chargers", createCharger);
-stationsRouter.put("/:stationId/chargers/:chargerId", updateCharger);
-stationsRouter.delete("/:stationId/chargers/:chargerId", deleteCharger);
-stationsRouter.put("/:stationId/chargers/:chargerId/pricing", updatePricing);
-stationsRouter.put("/:stationId/operating-hours", updateOperatingHours);
-stationsRouter.put("/:stationId/amenities", updateAmenities);
+stationsRouter.post("/:stationId/chargers", stationController.createCharger);
+stationsRouter.put(
+  "/:stationId/chargers/:chargerId",
+  stationController.updateCharger,
+);
+stationsRouter.delete(
+  "/:stationId/chargers/:chargerId",
+  stationController.deleteCharger,
+);
+stationsRouter.put(
+  "/:stationId/chargers/:chargerId/pricing",
+  stationController.updatePricing,
+);
+stationsRouter.put(
+  "/:stationId/operating-hours",
+  stationController.updateOperatingHours,
+);
+stationsRouter.put("/:stationId/amenities", stationController.updateAmenities);
 
 export default stationsRouter;
