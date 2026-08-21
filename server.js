@@ -22,7 +22,7 @@ const app = express();
 
 // CORS_ORIGIN can be a comma-separated list, e.g.
 // "http://localhost:5173,https://my-app.vercel.app"
-const allowedOrigins = (process.env.CORS_ORIGIN || "")
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter((origin) => origin);
@@ -30,18 +30,16 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "")
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log(
-        "CORS check for origin:",
-        origin,
-        "allowed origins:",
-        allowedOrigins,
-      );
-      // allow tools like curl/Postman with no origin
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS blocked for origin: ${origin}`));
+      // allow non-browser requests (curl, Postman, server-to-server) with no Origin header
+      if (!origin) {
+        return callback(null, true);
       }
+      console.log("allowedOrigins", allowedOrigins, origin);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
   }),

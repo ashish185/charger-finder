@@ -74,8 +74,8 @@ const vehiclesRouter = express.Router();
  */
 vehiclesRouter
   .route("/")
-  .post(requireAuth, vehicleController.createVehicle)
-  .get(requireAuth, vehicleController.listVehicles);
+  .post(vehicleController.createVehicle)
+  .get(vehicleController.listVehicles);
 
 /**
  * @openapi
@@ -101,8 +101,6 @@ vehiclesRouter
  *                 data: { type: object }
  *       404: { description: Vehicle not found. }
  */
-vehiclesRouter
-  .route("/:vehicleId")
-  .get(requireAuth, vehicleController.getVehicle);
+vehiclesRouter.route("/:vehicleId").get(vehicleController.getVehicle);
 
 export default vehiclesRouter;

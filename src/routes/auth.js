@@ -59,7 +59,19 @@ authRouter.post("/otp/verify", async (req, res) => {
       { expiresIn: "7d" },
     );
 
-    res.json({ success: true, sessionToken, phone: phone_number, user });
+    res.json({
+      success: true,
+      sessionToken,
+      phone: phone_number,
+      user: user
+        ? {
+            userId: user._id,
+            fullName: user.full_name,
+            phoneNumber: user.phone,
+            role: user.role,
+          }
+        : null,
+    });
   } catch (err) {
     console.error("Token verification failed:", err);
     res.status(401).json({ error: "Invalid or expired token" });

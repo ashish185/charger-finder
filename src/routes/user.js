@@ -38,4 +38,31 @@ const userRouter = express.Router();
  */
 userRouter.route("/").post(userController.registerUser);
 
+/**
+ * @openapi
+ * /user/{identifier}:
+ *   get:
+ *     tags: [User]
+ *     summary: Get a user by id or phone number.
+ *     parameters:
+ *       - name: identifier
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User id or phone number.
+ *     responses:
+ *       200:
+ *         description: User.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data: { type: object }
+ *       404: { description: User not found }
+ */
+userRouter.route("/:identifier").get(userController.getUser);
+
 export default userRouter;

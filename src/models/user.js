@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
-    fullName: {
+    full_name: {
       type: String,
       required: true,
       trim: true,
@@ -32,24 +32,28 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
-    phoneNumber: {
+    phone: {
       type: String,
       required: true,
       unique: true,
       trim: true,
     },
-    paymentMethods: [
+    payment_methods: [
       {
         type: { type: String, enum: ["CREDIT_CARD", "DIGITAL_WALLET"] },
         provider: String,
       },
     ],
-    agreedToTerms: {
+    agreed_to_terms: {
       type: Boolean,
+    },
+    role: {
+      type: [String],
+      default: ["customer"],
     },
   },
   {
-    timestamps: true,
+    timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
   },
 );
 

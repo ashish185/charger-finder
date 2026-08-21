@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import UserRepository from "../repositories/user-repository.js";
 
@@ -10,26 +11,41 @@ function conflictError(message) {
   return error;
 }
 
+function notFoundError(message) {
+  const error = new Error(message);
+  error.statusCode = 404;
+  error.code = "NOT_FOUND";
+  return error;
+}
+
+function validationError(message) {
+  const error = new Error(message);
+  error.statusCode = 400;
+  error.code = "VALIDATION_ERROR";
+  return error;
+}
+
 function userData(payload, hashedPassword) {
   return {
-    fullName: payload.fullName.trim(),
+    full_name: payload.fullName.trim(),
     email: payload.email ? payload.email.trim().toLowerCase() : undefined,
     password: hashedPassword,
-    phoneNumber: payload.phoneNumber.trim(),
-    paymentMethods: payload.paymentMethods || [],
-    agreedToTerms: payload.agreedToTerms,
+    phone: payload.phoneNumber.trim(),
+    payment_methods: payload.paymentMethods || [],
+    agreed_to_terms: payload.agreedToTerms,
   };
 }
 
 function userResponse(user) {
   return {
     userId: user._id,
-    fullName: user.fullName,
+    fullName: user.full_name,
     email: user.email,
-    phoneNumber: user.phoneNumber,
-    paymentMethods: user.paymentMethods || [],
-    agreedToTerms: user.agreedToTerms,
-    createdAt: user.createdAt,
+    phoneNumber: user.phone,
+    paymentMethods: user.payment_methods || [],
+    agreedToTerms: user.agreed_to_terms,
+    role: user.role,
+    createdAt: user.created_at,
   };
 }
 
@@ -65,6 +81,21 @@ class UserService {
       }
       throw error;
     }
+  }
+
+  async getByIdOrPhoneNumber(identifier) {
+    if (!identifier) {
+      throw validationError("identifier is required");
+    }
+
+    const user = mongoose.Types.ObjectId.isValid(identifier)
+      ? await this.userRepository.findById(identifier)
+      : await this.userRepository.findByPhoneNumber(identifier);
+
+    if (!user) {
+      throw notFoundError("User not found");
+    }
+    return userResponse(user);
   }
 }
 

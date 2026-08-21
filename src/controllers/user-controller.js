@@ -1,10 +1,10 @@
 import userService from "../services/user-service.js";
 import { validateRegistrationPayload } from "../validators/user-validator.js";
-
 class UserController {
   constructor(service) {
     this.userService = service || userService;
     this.registerUser = this.handler(this._registerUser);
+    this.getUser = this.handler(this._getUser);
   }
 
   sendError(res, error) {
@@ -31,6 +31,13 @@ class UserController {
     validateRegistrationPayload(req.body);
     const user = await this.userService.register(req.body);
     res.status(201).json({ success: true, data: user });
+  }
+
+  async _getUser(req, res) {
+    const user = await this.userService.getByIdOrPhoneNumber(
+      req.params.identifier,
+    );
+    res.json({ success: true, data: user });
   }
 }
 

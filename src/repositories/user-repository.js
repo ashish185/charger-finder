@@ -9,8 +9,12 @@ class UserRepository {
     return User.findOne({ email: email.toLowerCase().trim() }).lean();
   }
 
-  findByPhoneNumber(phoneNumber) {
-    return User.findOne({ phone: phoneNumber.trim() }).lean();
+  findByPhoneNumber(phone) {
+    return User.findOne({ phone: phone.trim() }).lean();
+  }
+
+  findById(userId) {
+    return User.findById(userId).lean();
   }
 }
 

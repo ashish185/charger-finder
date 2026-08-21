@@ -2,7 +2,6 @@
 // middleware/auth.js: Verifies JWT-based authentication for protected routes.
 // Checks for a valid "Authorization: Bearer <token>" header before
 // letting a request through to a protected route.
-
 import jwt from "jsonwebtoken";
 
 export function requireAuth(req, res, next) {
