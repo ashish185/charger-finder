@@ -74,8 +74,8 @@ const vehiclesRouter = express.Router();
  */
 vehiclesRouter
   .route("/")
-  .post(vehicleController.createVehicle)
-  .get(vehicleController.listVehicles);
+  .post(requireAuth, vehicleController.createVehicle)
+  .get(requireAuth, vehicleController.listVehicles);
 
 /**
  * @openapi

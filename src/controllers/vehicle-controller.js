@@ -7,7 +7,8 @@ class VehicleController {
   }
 
   userId(req) {
-    return req.user?._id || req.user?.id;
+    console.log("req", req.user);
+    return req?.user?.uid;
   }
 
   sendError(res, error) {

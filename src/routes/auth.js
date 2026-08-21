@@ -3,7 +3,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import { auth } from "../config/firebase.js";
-import UserRepository from "../repositories/user-repository.js";
+import userService from "../services/user-service.js";
 
 const authRouter = express.Router();
 /**
@@ -46,36 +46,62 @@ authRouter.post("/otp/verify", async (req, res) => {
 
   try {
     const decoded = await auth.verifyIdToken(idToken);
-    const { uid, phone_number } = decoded;
+    const { phone_number } = decoded;
 
-    const userRepository = new UserRepository();
-    // Look up or create your own user record here
-    const user = await userRepository.findByPhoneNumber(phone_number);
+    const user = await userService.findOrCreateByPhoneNumber(phone_number);
 
+    const userId = user.userId.toString();
     // Issue your own session token (recommended over trusting Firebase token on every request)
     const sessionToken = jwt.sign(
-      { uid, phone: phone_number },
+      { uid: userId, phone: phone_number },
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
+
+    res.cookie("token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.json({
       success: true,
       sessionToken,
       phone: phone_number,
-      user: user
-        ? {
-            userId: user._id,
-            fullName: user.full_name,
-            phoneNumber: user.phone,
-            role: user.role,
-          }
-        : null,
+      user,
     });
   } catch (err) {
     console.error("Token verification failed:", err);
     res.status(401).json({ error: "Invalid or expired token" });
   }
+});
+
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Log out the currently logged-in user by clearing the session cookie.
+ *     responses:
+ *       200:
+ *         description: Logged out.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string }
+ */
+authRouter.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  res.json({ success: true, message: "Logged out successfully" });
 });
 
 export default authRouter;

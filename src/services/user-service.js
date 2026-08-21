@@ -83,6 +83,19 @@ class UserService {
     }
   }
 
+  async findOrCreateByPhoneNumber(phoneNumber) {
+    const existingUser =
+      await this.userRepository.findByPhoneNumber(phoneNumber);
+    if (existingUser) {
+      return userResponse(existingUser);
+    }
+
+    const user = await this.userRepository.create({
+      phone: phoneNumber.trim(),
+    });
+    return userResponse(user.toObject());
+  }
+
   async getByIdOrPhoneNumber(identifier) {
     if (!identifier) {
       throw validationError("identifier is required");
@@ -91,6 +104,63 @@ class UserService {
     const user = mongoose.Types.ObjectId.isValid(identifier)
       ? await this.userRepository.findById(identifier)
       : await this.userRepository.findByPhoneNumber(identifier);
+
+    if (!user) {
+      throw notFoundError("User not found");
+    }
+    return userResponse(user);
+  }
+
+  async completeProfile(identifier, payload) {
+    if (!identifier) {
+      throw validationError("identifier is required");
+    }
+
+    if (payload.email) {
+      const existingEmail = await this.userRepository.findByEmail(
+        payload.email,
+      );
+      if (existingEmail && existingEmail._id.toString() !== identifier) {
+        throw conflictError("Email already registered");
+      }
+    }
+
+    const data = {
+      full_name: payload.full_name.trim(),
+      ...(payload.email ? { email: payload.email.trim().toLowerCase() } : {}),
+      ...(payload.password
+        ? { password: await bcrypt.hash(payload.password, SALT_ROUNDS) }
+        : {}),
+      ...(payload.agreed_to_terms !== undefined
+        ? { agreed_to_terms: payload.agreed_to_terms }
+        : {}),
+    };
+
+    try {
+      const user = await this.userRepository.updateProfileById(
+        identifier,
+        data,
+      );
+      if (!user) {
+        throw notFoundError("User not found");
+      }
+      return userResponse(user);
+    } catch (error) {
+      if (error.code === 11000) {
+        throw conflictError("Email already registered");
+      }
+      throw error;
+    }
+  }
+
+  async updateRole(identifier, role) {
+    if (!identifier) {
+      throw validationError("identifier is required");
+    }
+
+    const user = mongoose.Types.ObjectId.isValid(identifier)
+      ? await this.userRepository.updateRoleById(identifier, role)
+      : await this.userRepository.updateRoleByPhoneNumber(identifier, role);
 
     if (!user) {
       throw notFoundError("User not found");

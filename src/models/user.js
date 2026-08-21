@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema(
   {
     full_name: {
       type: String,
-      required: true,
       trim: true,
     },
     email: {
@@ -49,7 +48,6 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: [String],
-      default: ["customer"],
     },
   },
   {

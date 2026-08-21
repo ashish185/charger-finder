@@ -105,7 +105,6 @@ class StationRepository {
   }
 
   findByIdForOperator(stationId, operatorId) {
-    console.log("Finding station by ID for operator:", stationId, operatorId);
     return Station.findOne({ _id: stationId, operator_id: operatorId }).lean();
   }
 

@@ -1,10 +1,18 @@
+/* eslint-disable no-undef */
 import userService from "../services/user-service.js";
-import { validateRegistrationPayload } from "../validators/user-validator.js";
+import {
+  validateRegistrationPayload,
+  validateRolePayload,
+  validateCompleteProfilePayload,
+} from "../validators/user-validator.js";
 class UserController {
   constructor(service) {
     this.userService = service || userService;
     this.registerUser = this.handler(this._registerUser);
     this.getUser = this.handler(this._getUser);
+    this.getCurrentUser = this.handler(this._getCurrentUser);
+    this.updateRole = this.handler(this._updateRole);
+    this.completeProfile = this.handler(this._completeProfile);
   }
 
   sendError(res, error) {
@@ -34,9 +42,29 @@ class UserController {
   }
 
   async _getUser(req, res) {
-    const user = await this.userService.getByIdOrPhoneNumber(
-      req.params.identifier,
-    );
+    const identifier =
+      req.params.identifier || req.user?.uid || req.user?.phone;
+    const user = await this.userService.getByIdOrPhoneNumber(identifier);
+    res.json({ success: true, data: user });
+  }
+
+  async _getCurrentUser(req, res) {
+    const identifier = req.user?.phone;
+    const user = await this.userService.getByIdOrPhoneNumber(identifier);
+    res.json({ success: true, data: user });
+  }
+
+  async _completeProfile(req, res) {
+    validateCompleteProfilePayload(req.body);
+    const identifier = req.user?.uid || req.user?._id;
+    const user = await this.userService.completeProfile(identifier, req.body);
+    res.json({ success: true, data: user });
+  }
+
+  async _updateRole(req, res) {
+    validateRolePayload(req.body);
+    const identifier = req.user?._id || req.user?.uid || req.user?.phone;
+    const user = await this.userService.updateRole(identifier, req.body.role);
     res.json({ success: true, data: user });
   }
 }
