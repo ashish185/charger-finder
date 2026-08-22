@@ -62,7 +62,7 @@ authRouter.post("/otp/verify", async (req, res) => {
     res.cookie("token", sessionToken, {
       httpOnly: true,
       secure: isProd,
-      sameSite: isProd ? "none" : "lax",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
