@@ -11,8 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
-    "prepare": "husky"
+    "format:check": "prettier . --check"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -27,12 +26,12 @@
     "razorpay": "^2.9.8",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
-    "validator": "^13.12.0"
+    "validator": "^13.12.0",
+    "husky": "^9.1.7"
   },
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
-    "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
     "prettier-eslint": "^16.4.2"
