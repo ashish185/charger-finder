@@ -13,29 +13,27 @@ class ChargerRepository {
     }).lean();
   }
 
-  async estimate(chargerId, vehicleId) {
-    const charger = await this.findById(chargerId);
-    if (!charger) {
+  async findAvailabilitySlots(chargerId) {
+    if (!mongoose.Types.ObjectId.isValid(chargerId)) {
       return null;
     }
+    return Charger.findOne(
+      { _id: chargerId, is_deleted: { $ne: true } },
+      { availability_slots: 1 },
+    ).lean();
+  }
 
-    const travelTimeMin = 12;
-    const waitTimeMin = charger.status === "IN_USE" ? 8 : 2;
-    const chargeTimeMin = Math.max(
-      1,
-      Math.round((60 / charger.max_power_kw) * 20),
+  markSlotBooked(chargerId, slotId, orderId) {
+    return Charger.findOneAndUpdate(
+      { _id: chargerId, "availability_slots._id": slotId },
+      {
+        $set: {
+          "availability_slots.$.status": "BOOKED",
+          "availability_slots.$.order_id": orderId,
+        },
+      },
+      { new: true },
     );
-    const estimatedCost = Number(
-      (chargeTimeMin / 60) * charger.price_per_kwh * 8,
-    ).toFixed(2);
-
-    return {
-      chargerId: charger._id,
-      travelTimeMin,
-      waitTimeMin,
-      chargeTimeMin,
-      estimatedCost: Number(estimatedCost),
-    };
   }
 }
 

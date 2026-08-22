@@ -21,6 +21,33 @@ function ensureId(value, name) {
   }
 }
 
+function estimateSlotCost({
+  start,
+  end,
+  maxPowerKw,
+  pricePerKwh,
+  pricePerMinute,
+}) {
+  const durationMin = (new Date(end) - new Date(start)) / 60000;
+  if (!Number.isFinite(durationMin) || durationMin <= 0) {
+    return null;
+  }
+
+  const energyKwh = Number.isFinite(maxPowerKw)
+    ? maxPowerKw * (durationMin / 60)
+    : null;
+  const energyCost =
+    energyKwh !== null && Number.isFinite(pricePerKwh)
+      ? energyKwh * pricePerKwh
+      : 0;
+  const timeCost = Number.isFinite(pricePerMinute)
+    ? durationMin * pricePerMinute
+    : 0;
+
+  const total = energyCost + timeCost;
+  return Number.isFinite(total) ? Number(total.toFixed(2)) : null;
+}
+
 function chargerResponse(charger) {
   return {
     chargerId: charger._id,
@@ -51,19 +78,57 @@ class ChargerService {
     return chargerResponse(charger);
   }
 
-  async estimate(chargerId, vehicleId) {
+  async getAvailabilitySlots(chargerId) {
     ensureId(chargerId, "chargerId");
-    if (!vehicleId) {
-      throw validationError("vehicleId is required");
-    }
-    const estimate = await this.chargerRepository.estimate(
-      chargerId,
-      vehicleId,
-    );
-    if (!estimate) {
+    const charger =
+      await this.chargerRepository.findAvailabilitySlots(chargerId);
+    if (!charger) {
       throw notFound("Charger not found");
     }
-    return estimate;
+    return charger.availability_slots || [];
+  }
+
+  async estimate(chargerId, slotId) {
+    ensureId(chargerId, "chargerId");
+    ensureId(slotId, "slotId");
+
+    const charger = await this.chargerRepository.findById(chargerId);
+    if (!charger) {
+      throw notFound("Charger not found");
+    }
+
+    const slot = (charger.availability_slots || []).find(
+      (item) => String(item._id) === String(slotId),
+    );
+    if (!slot) {
+      throw notFound("Slot not found");
+    }
+
+    const estimatedCost = estimateSlotCost({
+      start: slot.start,
+      end: slot.end,
+      maxPowerKw: charger.max_power_kw,
+      pricePerKwh: charger.price_per_kwh,
+      pricePerMinute: charger.price_per_minute,
+    });
+    if (estimatedCost === null) {
+      throw validationError("Unable to estimate cost for the selected slot");
+    }
+
+    const chargeTimeMin = Math.round(
+      (new Date(slot.end) - new Date(slot.start)) / 60000,
+    );
+    const waitTimeMin = charger.status === "IN_USE" ? 8 : 2;
+    const travelTimeMin = 12;
+    console.log("estimatedCost", estimatedCost);
+    return {
+      chargerId: charger._id,
+      slotId: slot._id,
+      travelTimeMin,
+      waitTimeMin,
+      chargeTimeMin,
+      estimatedCost,
+    };
   }
 }
 

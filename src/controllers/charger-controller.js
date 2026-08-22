@@ -24,13 +24,24 @@ class ChargerController {
     }
   };
 
+  getChargerAvailabilitySlots = async (req, res) => {
+    try {
+      const data = await this.chargerService.getAvailabilitySlots(
+        req.params.chargerId,
+      );
+      res.json({ success: true, data });
+    } catch (error) {
+      this.sendError(res, error);
+    }
+  };
+
   getChargerEstimate = async (req, res) => {
     try {
       const data = await this.chargerService.estimate(
         req.params.chargerId,
-        req.query.vehicleId,
+        req.query.slotId,
       );
-      res.json(data);
+      res.json({ success: true, data });
     } catch (error) {
       this.sendError(res, error);
     }
