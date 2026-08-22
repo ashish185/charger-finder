@@ -58,10 +58,11 @@ authRouter.post("/otp/verify", async (req, res) => {
       { expiresIn: "7d" },
     );
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -95,10 +96,11 @@ authRouter.post("/otp/verify", async (req, res) => {
  *                 message: { type: string }
  */
 authRouter.post("/logout", (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
   });
 
   res.json({ success: true, message: "Logged out successfully" });
