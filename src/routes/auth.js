@@ -59,10 +59,11 @@ authRouter.post("/otp/verify", async (req, res) => {
     );
 
     const isProd = process.env.NODE_ENV === "production";
+    console.log("************is Prod env", isProd);
     res.cookie("token", sessionToken, {
       httpOnly: true,
       secure: isProd,
-      sameSite: "none",
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
