@@ -5,6 +5,7 @@ import bookingsRouter from "./bookings.js";
 import healthCheckRouter from "./health-check.js";
 import chargersRouter from "./chargers.js";
 import cpoStationsRouter from "./cpo-stations.js";
+import operatorStationsRouter from "./operator-stations.js";
 import pricingRouter from "./pricing.js";
 import stationsRouter from "./stations.js";
 import userRouter from "./user.js";
@@ -25,6 +26,9 @@ v1Router.use("/api/v1/bookings", bookingsRouter);
 
 // CPO portal station and charger management.
 v1Router.use("/api/v1/cpo/stations", cpoStationsRouter);
+
+// Operator self-service station and charger creation.
+v1Router.use("/api/v1/operator/stations", operatorStationsRouter);
 
 // CPO portal charger pricing config management.
 v1Router.use("/api/v1/cpo/chargers", pricingRouter);

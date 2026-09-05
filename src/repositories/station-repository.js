@@ -36,7 +36,7 @@ class StationRepository {
 
     const chargerMatch = { is_deleted: { $ne: true } };
     if (connectorTypes.length > 0) {
-      chargerMatch.connector = { $in: connectorTypes };
+      chargerMatch.connector_type = { $in: connectorTypes };
     }
     if (chargingTypes.length > 0) {
       chargerMatch.charging_type = { $in: chargingTypes };

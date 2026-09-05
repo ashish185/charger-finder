@@ -2,6 +2,7 @@ import {
   CHARGER_STATUSES,
   CHARGING_TYPES,
   CONNECTORS,
+  STATIONS_STATUS,
   VEHICLE_SIZE,
 } from "../constants.js";
 
@@ -13,13 +14,7 @@ const CONNECTOR_TYPES = [
   "Bharat_DC001",
 ];
 const VEHICLE_TYPES = ["2W_scooter", "2W_motorcycle", "3W", "4W"];
-const STATION_STATUSES = [
-  "draft",
-  "pending_review",
-  "live",
-  "maintenance",
-  "delisted",
-];
+const STATION_STATUSES = Object.values(STATIONS_STATUS);
 
 function validationError(message) {
   const error = new Error(message);
@@ -55,7 +50,14 @@ export function validateStationPayload(payload, { partial = false } = {}) {
   if (!partial || has("location")) {
     requireObject(payload.location, "location");
     const { lat, lng } = payload.location;
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng) ||
+      lat < -90 ||
+      lat > 90 ||
+      lng < -180 ||
+      lng > 180
+    ) {
       throw validationError(
         "location.lat and location.lng must be valid coordinates",
       );
@@ -70,6 +72,16 @@ export function validateStationPayload(payload, { partial = false } = {}) {
   }
   if (has("amenities") && !Array.isArray(payload.amenities)) {
     throw validationError("amenities must be an array");
+  }
+  if (has("occupancy")) {
+    if (
+      !Array.isArray(payload.occupancy) ||
+      payload.occupancy.some(
+        (type) => !Object.values(VEHICLE_SIZE).includes(type),
+      )
+    ) {
+      throw validationError("occupancy contains an invalid vehicle type");
+    }
   }
   if (has("paymentSupport") && !Array.isArray(payload.paymentSupport)) {
     throw validationError("paymentSupport must be an array");

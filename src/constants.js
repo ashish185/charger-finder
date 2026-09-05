@@ -21,6 +21,17 @@ export const CHARGER_STATUSES = Object.freeze({
   UNAVAILABLE: "UNAVAILABLE",
 });
 
+export const STATIONS_STATUS = Object.freeze({
+  OPEN: "open",
+  CLOSED: "closed",
+  FULLY_BOOKED: "fully_booked",
+});
+
+export const SLOT_STATUS = Object.freeze({
+  AVAILABLE: "AVAILABLE",
+  BOOKED: "BOOKED",
+});
+
 export const VEHICLE_SIZE = Object.freeze({
   TWO_WHEELER_SCOOTER: "two_wheeler_scooter",
   TWO_WHEELER_MOTORCYCLE: "two_wheeler_motorcycle",
@@ -28,10 +39,4 @@ export const VEHICLE_SIZE = Object.freeze({
   FOUR_WHEELER_HATCHBACK: "four_wheeler_hatchback",
   FOUR_WHEELER_SEDAN: "four_wheeler_sedan",
   FOUR_WHEELER_SUV: "four_wheeler_suv",
-});
-
-export const STATIONS_STATUS = Object.freeze({
-  OPEN: "open",
-  CLOSED: "closed",
-  FULLY_BOOKED: "fully_booked",
 });
