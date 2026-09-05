@@ -5,6 +5,7 @@ import {
   validateRolePayload,
   validateCompleteProfilePayload,
 } from "../validators/user-validator.js";
+import { issueSession } from "../utils/session.js";
 class UserController {
   constructor(service) {
     this.userService = service || userService;
@@ -65,6 +66,7 @@ class UserController {
     validateRolePayload(req.body);
     const identifier = req.user?._id || req.user?.uid || req.user?.phone;
     const user = await this.userService.updateRole(identifier, req.body.role);
+    issueSession(res, user);
     res.json({ success: true, data: user });
   }
 }

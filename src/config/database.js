@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
 // config/database.js: Connects the app to MongoDB using Mongoose.
 import mongoose from "mongoose";
-// import dns from "node:dns/promises";
-// dns.setServers(["1.1.1.1", "1.0.0.1"]); //use this if you are using hot
+import dns from "node:dns/promises";
+dns.setServers(["1.1.1.1", "1.0.0.1"]); //use this if you are using hot
 
 const connectToDatabase = async () => {
   const mongogUser = process.env.MONGO_USER;

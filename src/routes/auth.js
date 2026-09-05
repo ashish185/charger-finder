@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 // routes/auth.js: Handles authentication-related endpoints like signup, login, logout, and profile.
 import express from "express";
-import jwt from "jsonwebtoken";
 import { auth } from "../config/firebase.js";
 import userService from "../services/user-service.js";
+import { issueSession, clearSession } from "../utils/session.js";
 
 const authRouter = express.Router();
 /**
@@ -50,22 +50,8 @@ authRouter.post("/otp/verify", async (req, res) => {
 
     const user = await userService.findOrCreateByPhoneNumber(phone_number);
 
-    const userId = user.userId.toString();
     // Issue your own session token (recommended over trusting Firebase token on every request)
-    const sessionToken = jwt.sign(
-      { uid: userId, phone: phone_number },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" },
-    );
-
-    const isProd = process.env.NODE_ENV === "production";
-    console.log("************is Prod env", isProd);
-    res.cookie("token", sessionToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    const sessionToken = issueSession(res, user);
 
     res.json({
       success: true,
@@ -97,13 +83,7 @@ authRouter.post("/otp/verify", async (req, res) => {
  *                 message: { type: string }
  */
 authRouter.post("/logout", (req, res) => {
-  const isProd = process.env.NODE_ENV === "production";
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
-  });
-
+  clearSession(res);
   res.json({ success: true, message: "Logged out successfully" });
 });
 

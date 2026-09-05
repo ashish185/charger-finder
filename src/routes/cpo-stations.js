@@ -1,7 +1,10 @@
 import express from "express";
 import stationController from "../controllers/station-controller.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { ROLES } from "../constants.js";
 
 const stationsRouter = express.Router();
+const requireOperator = [requireAuth, requireRole(ROLES.ADMIN, ROLES.OPERATOR)];
 
 /**
  * @openapi
@@ -44,8 +47,8 @@ const stationsRouter = express.Router();
  */
 stationsRouter
   .route("/")
-  .post(stationController.createStation)
-  .get(stationController.listStations);
+  .post(requireOperator, stationController.createStation)
+  .get(requireOperator, stationController.listStations);
 
 /**
  * @openapi
@@ -92,28 +95,40 @@ stationsRouter
  */
 stationsRouter
   .route("/:stationId")
-  .get(stationController.getStation)
-  .put(stationController.updateStation)
-  .patch(stationController.updateStation)
-  .delete(stationController.deleteStation);
+  .get(requireOperator, stationController.getStation)
+  .put(requireOperator, stationController.updateStation)
+  .patch(requireOperator, stationController.updateStation)
+  .delete(requireOperator, stationController.deleteStation);
 
-stationsRouter.post("/:stationId/chargers", stationController.createCharger);
+stationsRouter.post(
+  "/:stationId/chargers",
+  requireOperator,
+  stationController.createCharger,
+);
 stationsRouter.put(
   "/:stationId/chargers/:chargerId",
+  requireOperator,
   stationController.updateCharger,
 );
 stationsRouter.delete(
   "/:stationId/chargers/:chargerId",
+  requireOperator,
   stationController.deleteCharger,
 );
 stationsRouter.put(
   "/:stationId/chargers/:chargerId/pricing",
+  requireOperator,
   stationController.updatePricing,
 );
 stationsRouter.put(
   "/:stationId/operating-hours",
+  requireOperator,
   stationController.updateOperatingHours,
 );
-stationsRouter.put("/:stationId/amenities", stationController.updateAmenities);
+stationsRouter.put(
+  "/:stationId/amenities",
+  requireOperator,
+  stationController.updateAmenities,
+);
 
 export default stationsRouter;

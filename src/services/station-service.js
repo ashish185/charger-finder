@@ -294,7 +294,7 @@ class StationService {
     const effectiveFrom = payload.effectiveFrom
       ? new Date(payload.effectiveFrom)
       : new Date();
-    const charger = await this.this.chargerRepository.updateForStation(
+    const charger = await this.chargerRepository.updateForStation(
       chargerId,
       stationId,
       {

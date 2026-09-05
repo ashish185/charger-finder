@@ -80,7 +80,7 @@ bookingsRouter.get("/my", requireAuth, bookingController.listMyBookings);
  *     tags:
  *       - Bookings
  *     summary: Razorpay payment webhook. Marks the order and charger slot as booked.
- *     responses:
+ *     responses:  
  *       200:
  *         description: Webhook processed.
  *       400: { description: Invalid webhook signature. }

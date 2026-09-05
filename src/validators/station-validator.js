@@ -55,20 +55,13 @@ export function validateStationPayload(payload, { partial = false } = {}) {
   if (!partial || has("location")) {
     requireObject(payload.location, "location");
     const { lat, lng } = payload.location;
-    if (
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lng) ||
-      lat < -90 ||
-      lat > 90 ||
-      lng < -180 ||
-      lng > 180
-    ) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       throw validationError(
         "location.lat and location.lng must be valid coordinates",
       );
     }
   }
-  if (has("operatingHours")) {
+  if (!partial || has("operatingHours")) {
     requireObject(payload.operatingHours, "operatingHours");
     if (!payload.operatingHours.is24x7) {
       ensureTime(payload.operatingHours.open, "operatingHours.open");
