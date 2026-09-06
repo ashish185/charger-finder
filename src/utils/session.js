@@ -19,11 +19,13 @@ export const issueSession = (res, user) => {
   );
 
   const isProd = process.env.NODE_ENV === "production";
+  console.log("****************IS Prod environment", isProd);
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
     maxAge: COOKIE_MAX_AGE_MS,
+    path: "/",
   });
 
   return token;

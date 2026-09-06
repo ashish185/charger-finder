@@ -51,11 +51,10 @@ authRouter.post("/otp/verify", async (req, res) => {
     const user = await userService.findOrCreateByPhoneNumber(phone_number);
 
     // Issue your own session token (recommended over trusting Firebase token on every request)
-    const sessionToken = issueSession(res, user);
+    issueSession(res, user);
 
     res.json({
       success: true,
-      sessionToken,
       phone: phone_number,
       user,
     });
