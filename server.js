@@ -20,7 +20,10 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-const allowedOrigins = ["https://charger-finder-ui.onrender.com"];
+const allowedOrigins = [
+  "https://charger-finder-ui.onrender.com",
+  "http://localhost:3000",
+];
 
 app.use(
   cors({
@@ -30,23 +33,15 @@ app.use(
         return callback(null, true);
       }
 
-      const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+      const isAllowed = allowedOrigins.includes(origin);
 
-      const isProduction = allowedOrigins.includes(origin);
-
-      if (isLocalhost || isProduction) {
+      if (isAllowed) {
+        console.log("****************Origin allowed called", origin);
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
-  }),
-);
-
-app.use(
-  cors({
-    origin: "https://charger-finder-ui.onrender.com",
     credentials: true,
   }),
 );
