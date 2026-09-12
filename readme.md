@@ -28,7 +28,7 @@ hotfix/crash
 ## Project Folder Structure
 
 ```text
-charger-finder/
+charger-finder/src
 ├── config/                     # Database configuration
 │   └── database.js            # Connects the app to MongoDB
 ├── middleware/                # Request protection logic

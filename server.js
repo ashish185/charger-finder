@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import router from "./src/routes/index.js";
-import connectToDatabase from "./config/database.js";
+import connectToDatabase from "./src/config/database.js";
 import cookieParser from "cookie-parser";
 import swaggerSpec from "./swagger.js";
 import swaggerUi from "swagger-ui-express";
@@ -20,27 +20,26 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// CORS_ORIGIN can be a comma-separated list, e.g.
-// "http://localhost:5173,https://my-app.vercel.app"
-const allowedOrigins = (process.env.CORS_ORIGIN || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter((origin) => origin);
+const allowedOrigins = [
+  "https://charger-finder-ui.onrender.com",
+  "http://localhost:3000",
+];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log(
-        "CORS check for origin:",
-        origin,
-        "allowed origins:",
-        allowedOrigins,
-      );
-      // allow tools like curl/Postman with no origin
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests without an Origin (Postman, server-to-server, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const isAllowed = allowedOrigins.includes(origin);
+
+      if (isAllowed) {
+        console.log("****************Origin allowed called", origin);
         callback(null, true);
       } else {
-        callback(new Error(`CORS blocked for origin: ${origin}`));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,

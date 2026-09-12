@@ -1,39 +1,83 @@
+// routes/stations.js: Public station discovery endpoints.
 import express from "express";
-import {
-  createCharger,
-  createStation,
-  deleteCharger,
-  deleteStation,
-  getStation,
-  listStations,
-  updateAmenities,
-  updateCharger,
-  updateOperatingHours,
-  updatePricing,
-  updateStation,
-} from "../controllers/station-controller.js";
+import stationController from "../controllers/station-controller.js";
 
 const stationsRouter = express.Router();
 
 /**
  * @openapi
- * /operator/stations:
- *   post:
- *     tags: [Operator Stations]
- *     summary: Create a station owned by the authenticated operator.
- *     responses:
- *       201: { description: Station created }
+ * /stations/nearby:
  *   get:
- *     tags: [Operator Stations]
- *     summary: List the authenticated operator's stations.
+ *     tags:
+ *       - Stations
+ *     summary: Find nearby stations with available charger counts.
  *     parameters:
- *       - { name: status, in: query, schema: { type: string } }
- *       - { name: city, in: query, schema: { type: string } }
- *       - { name: page, in: query, schema: { type: integer, minimum: 1 } }
- *       - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+ *       - name: lat
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: lng
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: radiusKm
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: connectorType
+ *         in: query
+ *         required: false
+ *         style: form
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: ["Type 2", CCS2]
+ *       - name: chargingType
+ *         in: query
+ *         required: false
+ *         style: form
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [AC, DC]
+ *       - name: chargerStatus
+ *         in: query
+ *         required: false
+ *         style: form
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [AVAILABLE, IN_USE, UNAVAILABLE]
+ *       - name: occupancy
+ *         in: query
+ *         required: false
+ *         style: form
+ *         explode: true
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum:
+ *               [
+ *                 two_wheeler_scooter,
+ *                 two_wheeler_motorcycle,
+ *                 three_wheeler,
+ *                 four_wheeler_hatchback,
+ *                 four_wheeler_sedan,
+ *                 four_wheeler_suv,
+ *               ]
  *     responses:
  *       200:
- *         description: Station portfolio.
+ *         description: Nearby stations with available charger counts.
  *         content:
  *           application/json:
  *             schema:
@@ -41,32 +85,29 @@ const stationsRouter = express.Router();
  *               properties:
  *                 success: { type: boolean, example: true }
  *                 data:
- *                   type: object
- *                   properties:
- *                     stations:
- *                       type: array
- *                       items:
- *                         $ref: "#/components/schemas/StationSummary"
- *                     pagination:
- *                       type: object
- *                       properties:
- *                         page: { type: integer, example: 1 }
- *                         limit: { type: integer, example: 20 }
- *                         total: { type: integer, example: 2 }
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       400: { description: Validation error }
  */
-stationsRouter.route("/").post(createStation).get(listStations);
+stationsRouter.get("/nearby", stationController.findNearbyStations);
 
 /**
  * @openapi
- * /operator/stations/{stationId}:
+ * /stations/{stationId}/chargers:
  *   get:
- *     tags: [Operator Stations]
- *     summary: Get an owned station and its chargers.
+ *     tags:
+ *       - Stations
+ *     summary: List chargers (with pricing) available at a station.
  *     parameters:
- *       - $ref: "#/components/parameters/StationId"
+ *       - name: stationId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Station detail.
+ *         description: Chargers available at the station.
  *         content:
  *           application/json:
  *             schema:
@@ -74,43 +115,12 @@ stationsRouter.route("/").post(createStation).get(listStations);
  *               properties:
  *                 success: { type: boolean, example: true }
  *                 data:
- *                   allOf:
- *                     - $ref: "#/components/schemas/StationSummary"
- *                     - type: object
- *                       properties:
- *                         chargers:
- *                           type: array
- *                           items:
- *                             $ref: "#/components/schemas/Charger"
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       400: { description: Validation error }
  *       404: { description: Station not found }
- *   put:
- *     tags: [Operator Stations]
- *     summary: Update station metadata.
- *     parameters:
- *       - $ref: "#/components/parameters/StationId"
- *   patch:
- *     tags: [Operator Stations]
- *     summary: Partially update station metadata.
- *     parameters:
- *       - $ref: "#/components/parameters/StationId"
- *   delete:
- *     tags: [Operator Stations]
- *     summary: Soft-delete a station by setting its status to delisted.
- *     parameters:
- *       - $ref: "#/components/parameters/StationId"
  */
-stationsRouter
-  .route("/:stationId")
-  .get(getStation)
-  .put(updateStation)
-  .patch(updateStation)
-  .delete(deleteStation);
-
-stationsRouter.post("/:stationId/chargers", createCharger);
-stationsRouter.put("/:stationId/chargers/:chargerId", updateCharger);
-stationsRouter.delete("/:stationId/chargers/:chargerId", deleteCharger);
-stationsRouter.put("/:stationId/chargers/:chargerId/pricing", updatePricing);
-stationsRouter.put("/:stationId/operating-hours", updateOperatingHours);
-stationsRouter.put("/:stationId/amenities", updateAmenities);
+stationsRouter.get("/:stationId/chargers", stationController.getStationCharges);
 
 export default stationsRouter;

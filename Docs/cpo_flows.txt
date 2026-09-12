@@ -1,0 +1,550 @@
+# Chargefinder — CPO Portal API Contracts
+
+Derived from PRD v3, Sections 8 (CPO Flows), 11 (CPO Portal Strategy), 12 (Accountability Model), 15 (Integration Model). Covers only CPO-side/portal APIs — driver-app APIs are out of scope here.
+
+**Base URL:** `/api/v1/cpo`
+**Auth:** All endpoints (except registration/login) require `Authorization: Bearer <access_token>`, scoped to the authenticated CPO's own stations. Standard envelope: `{ "success": bool, "data": {...}, "error": {...} }`.
+
+---
+
+## 1. CPO Registration & Login
+*(PRD Flow 1: only verified CPOs can access the portal)*
+
+### 1.1 Register CPO
+`POST /auth/register`
+
+```json
+// Request
+{
+  "companyName": "string",
+  "contactName": "string",
+  "email": "string",
+  "phone": "string",
+  "gstNumber": "string",
+  "businessType": "individual | company | mall | hotel | campus | parking_operator",
+  "city": "string"
+}
+
+// Response 201
+{
+  "success": true,
+  "data": {
+    "cpoId": "cpo_uuid",
+    "status": "pending_verification",
+    "createdAt": "2026-08-06T10:00:00Z"
+  }
+}
+```
+
+### 1.2 Submit Verification Documents
+`POST /auth/{cpoId}/verification-documents`
+
+```json
+// Request (multipart/form-data)
+{
+  "documentType": "gst_certificate | business_license | pan | electricity_agreement",
+  "file": "binary"
+}
+
+// Response 202
+{
+  "success": true,
+  "data": { "documentId": "doc_uuid", "status": "under_review" }
+}
+```
+
+### 1.3 Verification Status
+`GET /auth/{cpoId}/verification-status`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "cpoId": "cpo_uuid",
+    "status": "pending_verification | verified | rejected",
+    "reason": "string | null",
+    "verifiedAt": "timestamp | null"
+  }
+}
+```
+
+### 1.4 Login
+`POST /auth/login`
+
+```json
+// Request
+{ "email": "string", "password": "string" }
+// or OTP-based:
+{ "phone": "string", "otp": "string" }
+
+// Response 200 — only succeeds if status == verified
+{
+  "success": true,
+  "data": {
+    "accessToken": "jwt",
+    "refreshToken": "jwt",
+    "expiresIn": 3600,
+    "cpoId": "cpo_uuid"
+  }
+}
+
+// Response 403 (unverified)
+{
+  "success": false,
+  "error": { "code": "CPO_NOT_VERIFIED", "message": "Account pending verification" }
+}
+```
+
+### 1.5 Refresh Token
+`POST /auth/refresh`
+```json
+// Request
+{ "refreshToken": "jwt" }
+// Response 200
+{ "success": true, "data": { "accessToken": "jwt", "expiresIn": 3600 } }
+```
+
+### 1.6 Logout
+`POST /auth/logout` → `204 No Content`
+
+---
+
+## 2. Station Management
+*(PRD Flow 2 + Section 15 "Operator portal must-have fields")*
+
+### 2.1 Create Station
+`POST /stations`
+
+```json
+// Request
+{
+  "name": "string",
+  "address": "string",
+  "location": { "lat": 17.4123, "lng": 78.4456 },
+  "operatingHours": { "open": "06:00", "close": "23:00", "is24x7": false },
+  "amenities": ["restroom", "food", "parking", "wifi"],
+  "bookingRules": { "advanceBookingMinutes": 30, "cancellationWindowMinutes": 10 },
+  "paymentSupport": ["upi", "card", "wallet"],
+  "supportContact": { "name": "string", "phone": "string" }
+}
+
+// Response 201
+{
+  "success": true,
+  "data": {
+    "stationId": "stn_uuid",
+    "status": "draft",          // draft -> pending_review -> live
+    "createdAt": "timestamp"
+  }
+}
+```
+
+### 2.2 List Stations (own portfolio)
+`GET /stations?status=&city=&page=&limit=`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "stations": [
+      {
+        "stationId": "stn_uuid",
+        "name": "string",
+        "status": "live | draft | delisted | maintenance",
+        "trustScore": 92,
+        "lastAcknowledgedAt": "timestamp",
+        "chargerCount": 4
+      }
+    ],
+    "pagination": { "page": 1, "limit": 20, "total": 8 }
+  }
+}
+```
+
+### 2.3 Get Station Detail
+`GET /stations/{stationId}` → full static + dynamic payload (station object as in 2.1 plus current status fields from Section 4/5).
+
+### 2.4 Update Station Metadata
+`PUT /stations/{stationId}` — same body shape as 2.1 (partial allowed via `PATCH /stations/{stationId}`).
+
+### 2.5 Delete / Deactivate Station
+`DELETE /stations/{stationId}` → soft-delete, sets status `delisted`.
+
+### 2.6 Add Charger to Station
+`POST /stations/{stationId}/chargers`
+
+```json
+// Request
+{
+  "connectorType": "CCS2 | CHAdeMO | Type2_AC | Bharat_AC001 | Bharat_DC001",
+  "maxPowerKw": 30,
+  "vehicleCompatibility": ["2W_scooter", "2W_motorcycle", "3W", "4W"],
+  "pricePerKwh": 18.5,
+  "pricePerMinute": null
+}
+
+// Response 201
+{
+  "success": true,
+  "data": { "chargerId": "chg_uuid", "status": "available" }
+}
+```
+
+### 2.7 Update / Remove Charger
+`PUT /stations/{stationId}/chargers/{chargerId}` — same body as 2.6.
+`DELETE /stations/{stationId}/chargers/{chargerId}` → `204`.
+
+### 2.8 Update Pricing
+`PUT /stations/{stationId}/chargers/{chargerId}/pricing`
+
+```json
+// Request
+{ "pricePerKwh": 19.0, "pricePerMinute": null, "effectiveFrom": "timestamp" }
+// Response 200 — triggers immediate reflection on driver app (Section 8, Flow 4)
+{ "success": true, "data": { "chargerId": "chg_uuid", "pricePerKwh": 19.0, "updatedAt": "timestamp" } }
+```
+
+### 2.9 Update Operating Hours / Amenities
+`PUT /stations/{stationId}/operating-hours`
+`PUT /stations/{stationId}/amenities`
+(bodies mirror the relevant fields in 2.1)
+
+---
+
+## 3. Station & Charger Status Updates
+*(PRD Flow 4 — reflected immediately on driver app)*
+
+### 3.1 Update Charger Status
+`PUT /stations/{stationId}/chargers/{chargerId}/status`
+
+```json
+// Request
+{
+  "status": "available | occupied | out_of_service",
+  "reason": "string | null"   // required if out_of_service
+}
+
+// Response 200
+{
+  "success": true,
+  "data": {
+    "chargerId": "chg_uuid",
+    "status": "out_of_service",
+    "reason": "connector damaged",
+    "updatedAt": "timestamp"
+  }
+}
+```
+
+### 3.2 Toggle Maintenance Mode (station-level)
+`PUT /stations/{stationId}/maintenance-mode`
+
+```json
+// Request
+{ "enabled": true, "reason": "string", "expectedResolutionAt": "timestamp | null" }
+// Response 200
+{ "success": true, "data": { "stationId": "stn_uuid", "maintenanceMode": true } }
+```
+
+### 3.3 Temporary Closure
+`PUT /stations/{stationId}/temporary-closure`
+
+```json
+// Request
+{ "closed": true, "reason": "string", "reopensAt": "timestamp | null" }
+// Response 200
+{ "success": true, "data": { "stationId": "stn_uuid", "closed": true } }
+```
+
+### 3.4 Bulk Status Update (optional, for multi-charger operators)
+`PUT /stations/{stationId}/chargers/status-bulk`
+```json
+// Request
+{ "updates": [ { "chargerId": "chg_1", "status": "available" }, { "chargerId": "chg_2", "status": "occupied" } ] }
+// Response 200 — array of per-item results
+```
+
+---
+
+## 4. Daily Station Acknowledgement
+*(PRD Flow 3 + Section 12 accountability model — required at least once/day)*
+
+### 4.1 Acknowledge Station
+`POST /stations/{stationId}/acknowledge`
+
+```json
+// Request
+{
+  "confirmedFieldsAccurate": true,
+  "notes": "string | null"
+}
+
+// Response 200
+{
+  "success": true,
+  "data": {
+    "stationId": "stn_uuid",
+    "acknowledgedAt": "timestamp",
+    "nextAcknowledgementDueAt": "timestamp",   // now + freshness threshold
+    "confidenceLevel": "verified"
+  }
+}
+```
+
+### 4.2 Get Acknowledgement Status (single station)
+`GET /stations/{stationId}/acknowledgement-status`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "stationId": "stn_uuid",
+    "lastAcknowledgedAt": "timestamp",
+    "isStale": false,
+    "freshnessThresholdHours": 24,
+    "displayLabel": "not_verified | verified_recently | stale"
+  }
+}
+```
+
+### 4.3 List Pending Acknowledgements (across CPO's portfolio)
+`GET /acknowledgements/pending`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "stations": [
+      { "stationId": "stn_uuid", "name": "string", "hoursOverdue": 3 }
+    ]
+  }
+}
+```
+
+### 4.4 Acknowledgement History
+`GET /stations/{stationId}/acknowledgement-history?from=&to=`
+
+---
+
+## 5. Bookings (CPO visibility)
+*(PRD Section 15 — "Booking calendar" is a must-have portal field; CPOs view, not create, bookings)*
+
+### 5.1 List Bookings for a Station
+`GET /stations/{stationId}/bookings?status=&date=&page=&limit=`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "bookings": [
+      {
+        "bookingId": "bkg_uuid",
+        "chargerId": "chg_uuid",
+        "userMasked": "9xxxxx1234",
+        "slotStart": "timestamp",
+        "slotEnd": "timestamp",
+        "status": "confirmed | in_progress | completed | cancelled | no_show",
+        "vehicleType": "4W"
+      }
+    ],
+    "pagination": { "page": 1, "limit": 20, "total": 42 }
+  }
+}
+```
+
+### 5.2 Get Booking Detail
+`GET /bookings/{bookingId}`
+
+### 5.3 Booking Calendar View
+`GET /stations/{stationId}/bookings/calendar?from=&to=` → aggregated slot occupancy for calendar UI.
+
+---
+
+## 6. Payment Settlement
+*(PRD Section 15 — "Payment settlement summary")*
+
+### 6.1 Settlement Summary
+`GET /payments/settlements?from=&to=&stationId=`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "totalGrossRevenue": 84500.00,
+    "totalConvenienceFeeDeducted": 4225.00,
+    "totalNetPayable": 80275.00,
+    "currency": "INR",
+    "settlements": [
+      {
+        "settlementId": "stl_uuid",
+        "periodStart": "date",
+        "periodEnd": "date",
+        "grossAmount": 12000.00,
+        "netAmount": 11400.00,
+        "status": "pending | processed | paid",
+        "payoutDate": "date | null"
+      }
+    ]
+  }
+}
+```
+
+### 6.2 Settlement Detail (line items)
+`GET /payments/settlements/{settlementId}`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "settlementId": "stl_uuid",
+    "transactions": [
+      { "bookingId": "bkg_uuid", "amount": 320.00, "fee": 16.00, "netAmount": 304.00, "date": "timestamp" }
+    ]
+  }
+}
+```
+
+---
+
+## 7. Fault Reports & Discrepancy / Trust Score
+*(PRD Section 12 — discrepancy history, trust score, delisting; Flow 3 driver-side fault reports surfaced to CPO)*
+
+### 7.1 List Fault Reports for a Station
+`GET /stations/{stationId}/fault-reports?status=open&from=&to=`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "reports": [
+      {
+        "reportId": "flt_uuid",
+        "chargerId": "chg_uuid",
+        "problemType": "not_working | wrong_price | occupied_but_shown_free | connector_mismatch",
+        "reportedAt": "timestamp",
+        "onSiteConfirmed": true,
+        "status": "open | acknowledged | resolved"
+      }
+    ]
+  }
+}
+```
+
+### 7.2 Respond to a Fault Report
+`PUT /stations/{stationId}/fault-reports/{reportId}/respond`
+
+```json
+// Request
+{ "action": "acknowledge | dispute | resolve", "resolutionNotes": "string" }
+// Response 200
+{ "success": true, "data": { "reportId": "flt_uuid", "status": "resolved" } }
+```
+
+### 7.3 Get Trust Score
+`GET /stations/{stationId}/trust-score`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "stationId": "stn_uuid",
+    "trustScore": 78,
+    "band": "high | medium | low",
+    "factors": {
+      "acknowledgementConsistency": 0.9,
+      "discrepancyRate": 0.15,
+      "reportedVsConfirmedFaults": 0.2
+    },
+    "visibilityImpact": "none | reduced_ranking | delisted"
+  }
+}
+```
+
+### 7.4 Discrepancy History
+`GET /stations/{stationId}/discrepancy-history?from=&to=`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "discrepancies": [
+      {
+        "date": "date",
+        "type": "status_mismatch | pricing_mismatch | availability_mismatch",
+        "description": "string",
+        "resolved": true
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 8. Station Analytics
+*(PRD Section 11 — "Station analytics at a basic level")*
+
+### 8.1 Station-Level Analytics
+`GET /stations/{stationId}/analytics?from=&to=`
+
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "views": 1240,
+    "bookings": 86,
+    "completedSessions": 79,
+    "cancellationRate": 0.08,
+    "utilizationRate": 0.42,
+    "avgRating": 4.3
+  }
+}
+```
+
+### 8.2 Portfolio Summary (all stations)
+`GET /analytics/summary?from=&to=`
+
+---
+
+## 9. Station Preview (driver-app view, read-only)
+*(PRD Section 15 — "Station preview in the driver app")*
+
+### 9.1 Preview How Station Appears to Drivers
+`GET /stations/{stationId}/preview`
+
+```json
+// Response 200 — mirrors the driver-app charger detail payload
+{
+  "success": true,
+  "data": {
+    "stationId": "stn_uuid",
+    "name": "string",
+    "distanceLabel": "n/a (preview mode)",
+    "chargers": [
+      { "chargerId": "chg_uuid", "connectorType": "CCS2", "status": "available", "pricePerKwh": 19.0 }
+    ],
+    "freshnessLabel": "Updated 3 mins ago",
+    "confidenceBadge": "verified | not_verified | community_reported"
+  }
+}
+```
+
+---
+
+## Cross-Cutting Notes
+
+- **Freshness/status propagation:** Any write to §2.8, §3.1–3.3 must trigger an async event (`station.updated`) so the driver-app read layer reflects it immediately (PRD: "immediately reflected in the Chargefinder platform").
+- **Acknowledgement gating:** A scheduled job checks §4.2 per station against `freshnessThresholdHours`; if breached, station status flips to `Status Not Verified` and is exposed via §2.3/§9.1 to the driver app — no separate CPO-facing endpoint needed for this side-effect, it's derived state.
+- **Error codes to standardize:** `CPO_NOT_VERIFIED`, `STATION_NOT_FOUND`, `CHARGER_NOT_FOUND`, `ACK_ALREADY_SUBMITTED_TODAY`, `INVALID_STATUS_TRANSITION`, `UNAUTHORIZED_STATION_ACCESS`.
+- **Not covered here (driver-side, separate contract set):** OTP login, vehicle management, map/search, compatibility filtering, in-app booking creation, payment initiation, QR-based session start.

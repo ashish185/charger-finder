@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import StationRepository from "../repositories/station-repository.js";
 import StationChargerRepository from "../repositories/station-charger-repository.js";
+import { CHARGER_STATUSES, STATIONS_STATUS } from "../constants.js";
 
 function notFound(message) {
   const error = new Error(message);
@@ -34,6 +35,9 @@ function stationData(payload) {
   }
   if (payload.amenities !== undefined) {
     data.amenities = payload.amenities;
+  }
+  if (payload.occupancy !== undefined) {
+    data.occupancy = payload.occupancy;
   }
   if (payload.paymentSupport !== undefined) {
     data.payment_support = payload.paymentSupport;
@@ -103,6 +107,9 @@ function chargerData(payload) {
   if (payload.connectorType !== undefined) {
     data.connector_type = payload.connectorType;
   }
+  if (payload.chargingType !== undefined) {
+    data.charging_type = payload.chargingType;
+  }
   if (payload.maxPowerKw !== undefined) {
     data.max_power_kw = payload.maxPowerKw;
   }
@@ -123,6 +130,7 @@ function chargerResponse(charger) {
     chargerId: charger._id,
     stationId: charger.station_id,
     connectorType: charger.connector_type,
+    chargingType: charger.charging_type,
     maxPowerKw: charger.max_power_kw,
     vehicleCompatibility: charger.vehicle_compatibility || [],
     pricePerKwh: charger.price_per_kwh,
@@ -132,11 +140,38 @@ function chargerResponse(charger) {
   };
 }
 
+function nearbyStationResponse(station) {
+  return {
+    stationId: station._id,
+    name: station.name,
+    address: station.address,
+    location: {
+      lat: station.location.coordinates[1],
+      lng: station.location.coordinates[0],
+    },
+    amenities: station.amenities || [],
+    operatingHours: {
+      open: station.operating_hours?.open,
+      close: station.operating_hours?.close,
+      is24x7: station.operating_hours?.is_24x7,
+    },
+    occupancy: station.occupancy || [],
+    distanceKm: station.distanceKm,
+    totalChargers: station.totalChargers,
+    availableChargers: station.availableChargers,
+  };
+}
+
 class StationService {
   constructor(stationRepository, chargerRepository) {
     this.stationRepository = stationRepository || new StationRepository();
     this.chargerRepository =
       chargerRepository || new StationChargerRepository();
+  }
+
+  async findNearby(query) {
+    const stations = await this.stationRepository.findNearby(query);
+    return stations.map(nearbyStationResponse);
   }
 
   async create(operatorId, payload) {
@@ -186,6 +221,16 @@ class StationService {
     };
   }
 
+  async listCharges(stationId) {
+    ensureId(stationId, "stationId");
+    const station = await this.stationRepository.findById(stationId);
+    if (!station) {
+      throw notFound("Station not found");
+    }
+    const chargers = await this.chargerRepository.findByStation(stationId);
+    return chargers.map(chargerResponse);
+  }
+
   async update(operatorId, stationId, payload) {
     ensureId(stationId, "stationId");
     const station = await this.stationRepository.updateForOperator(
@@ -205,7 +250,7 @@ class StationService {
     const station = await this.stationRepository.updateForOperator(
       stationId,
       operatorId,
-      { $set: { status: "delisted", delisted_at: new Date() } },
+      { $set: { status: STATIONS_STATUS.CLOSED, delisted_at: new Date() } },
     );
     if (!station) {
       throw notFound("Station not found");
@@ -217,7 +262,7 @@ class StationService {
     const charger = await this.chargerRepository.create({
       ...chargerData(payload),
       station_id: stationId,
-      status: "AVAILABLE",
+      status: CHARGER_STATUSES.AVAILABLE,
       last_updated_at: new Date(),
       last_updated_source: "operator",
     });
@@ -257,7 +302,7 @@ class StationService {
     const effectiveFrom = payload.effectiveFrom
       ? new Date(payload.effectiveFrom)
       : new Date();
-    const charger = await this.this.chargerRepository.updateForStation(
+    const charger = await this.chargerRepository.updateForStation(
       chargerId,
       stationId,
       {

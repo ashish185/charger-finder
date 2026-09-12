@@ -13,6 +13,8 @@ use("dev");
 // ---------------------------------------------------------------------
 const user_id1 = ObjectId();
 const user_id2 = ObjectId();
+const user_id3 = ObjectId();
+const user_id4 = ObjectId();
 
 const vehicle_id1 = ObjectId();
 const vehicle_id2 = ObjectId();
@@ -25,6 +27,13 @@ const station_id2 = ObjectId();
 const charger_id1 = ObjectId();
 const charger_id2 = ObjectId();
 const charger_id3 = ObjectId();
+
+const slot_id1 = ObjectId();
+const slot_id2 = ObjectId();
+const slot_id3 = ObjectId();
+const slot_id4 = ObjectId();
+const slot_id5 = ObjectId();
+const slot_id6 = ObjectId();
 
 const order_id1 = ObjectId();
 const order_id2 = ObjectId();
@@ -41,6 +50,10 @@ const acknowledgement_id2 = ObjectId();
 const trust_score_id1 = ObjectId();
 const trust_score_id2 = ObjectId();
 
+const pricing_id1 = ObjectId();
+const pricing_id2 = ObjectId();
+const pricing_id3 = ObjectId();
+
 // ---------------------------------------------------------------------
 // users
 // ---------------------------------------------------------------------
@@ -49,11 +62,29 @@ db.users.insertMany([
     _id: user_id1,
     phone: "+919876543210",
     created_at: ISODate("2026-06-01T08:15:00Z"),
+    full_name: "Chirag Goel",
+    role: ["customer"],
   },
   {
     _id: user_id2,
     phone: "+919123456780",
     created_at: ISODate("2026-06-03T14:40:00Z"),
+    full_name: "Arun Sharma",
+    role: ["operator"],
+  },
+  {
+    _id: user_id3,
+    phone: "+919012345678",
+    created_at: ISODate("2026-06-03T14:40:00Z"),
+    full_name: "Ashish Singhal",
+    role: ["admin"],
+  },
+  {
+    _id: user_id4,
+    phone: "+919012345679",
+    created_at: ISODate("2026-06-03T14:40:00Z"),
+    full_name: "Ashwini",
+    role: ["pricing_manager"],
   },
 ]);
 
@@ -64,29 +95,55 @@ db.vehicles.insertMany([
   {
     _id: vehicle_id1,
     user_id: user_id1,
-    type: "2W_SCOOTER",
-    connector_types: ["Type2"],
-    charging_speed_class: "FAST",
-    registration_number: "MH12AB1234",
+    nickname: "My Nexon EV",
+    manufacturer: "Tata Motors",
+    model: "Nexon EV",
+    variant: "Empowered Plus LR",
+    vehicle_type: "four_wheeler_suv",
+    registration_number: "HR26AB1234",
+    battery_capacity_kwh: 40.5,
+    charging_options: [
+      { charging_type: "AC", connector_type: "Type 2" },
+      { charging_type: "DC", connector_type: "CCS2" },
+    ],
+    range_km: 465,
+    is_default: true,
+    created_at: ISODate("2026-08-15T10:00:00Z"),
+    updated_at: ISODate("2026-08-15T10:00:00Z"),
   },
   {
     _id: vehicle_id2,
     user_id: user_id2,
-    type: "4W_HATCHBACK",
-    connector_types: ["CCS2"],
-    charging_speed_class: "RAPID",
+    nickname: "Office Commuter",
+    manufacturer: "Ola Electric",
+    model: "S1 Pro",
+    variant: "Gen 2",
+    vehicle_type: "two_wheeler_scooter",
     registration_number: "MH14CD5678",
+    battery_capacity_kwh: 4.0,
+    charging_options: [{ charging_type: "AC", connector_type: "Type 2" }],
+    range_km: 195,
+    is_default: true,
+    created_at: ISODate("2026-06-10T09:20:00Z"),
+    updated_at: ISODate("2026-06-10T09:20:00Z"),
   },
 ]);
 
 // ---------------------------------------------------------------------
-// operators  (CPOs)
+// operators  (CPOs — registered independently via POST /api/v1/cpo,
+// matches src/models/operator.js; phone number lives on the linked
+// users doc with role: ["cpo"], not duplicated here)
 // ---------------------------------------------------------------------
 db.operators.insertMany([
   {
     _id: operator_id1,
-    name: "GreenVolt Charging Pvt Ltd",
-    contact: "ops@greenvolt.in",
+    user_id: user_id2,
+    business_name: "GreenVolt Charging Pvt Ltd",
+    full_name: "Arun Sharma",
+    gst_number: "27AAECG1234F1Z5",
+    agreed_to_terms: true,
+    created_at: ISODate("2026-06-03T14:45:00Z"),
+    updated_at: ISODate("2026-06-03T14:45:00Z"),
   },
 ]);
 
@@ -102,6 +159,8 @@ db.stations.insertMany([
     location: { type: "Point", coordinates: [72.8296, 19.1358] },
     amenities: ["Parking", "Restroom", "Cafe"],
     operating_hours: "06:00-23:00",
+    occupancy: ["two_wheeler_scooter", "four_wheeler_hatchback"],
+    status: "open",
   },
   {
     _id: station_id2,
@@ -111,6 +170,8 @@ db.stations.insertMany([
     location: { type: "Point", coordinates: [72.8656, 19.0668] },
     amenities: ["Parking", "24x7 Security"],
     operating_hours: "00:00-23:59",
+    occupancy: ["four_wheeler_sedan", "four_wheeler_suv", "three_wheeler"],
+    status: "fully_booked",
   },
 ]);
 // index used by ChargerAvailabilityService (nearby queries reference station location)
@@ -126,34 +187,88 @@ db.chargers.insertMany([
     _id: charger_id1,
     station_id: station_id1,
     connector_type: "Type2",
+    charging_type: "AC",
     max_power_kw: 7.4,
     status: "AVAILABLE",
     price_per_kwh: 18.5,
     last_updated_at: ISODate("2026-08-05T06:10:00Z"),
     last_updated_source: "CPO_PORTAL",
     fault_flag: false,
+    // order_id1 occupies the 09:00-09:30 slot below (status COMPLETED)
+    availability_slots: [
+      {
+        _id: slot_id1,
+        start: ISODate("2026-08-05T09:00:00Z"),
+        end: ISODate("2026-08-05T09:30:00Z"),
+        status: "BOOKED",
+        order_id: order_id1,
+      },
+      {
+        _id: slot_id2,
+        start: ISODate("2026-08-05T09:30:00Z"),
+        end: ISODate("2026-08-05T10:00:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+      {
+        _id: slot_id3,
+        start: ISODate("2026-08-05T10:00:00Z"),
+        end: ISODate("2026-08-05T10:30:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+    ],
   },
   {
     _id: charger_id2,
     station_id: station_id1,
     connector_type: "CCS2",
+    charging_type: "DC",
     max_power_kw: 50,
     status: "IN_USE",
     price_per_kwh: 22.0,
     last_updated_at: ISODate("2026-08-05T07:45:00Z"),
     last_updated_source: "CPO_PORTAL",
     fault_flag: false,
+    availability_slots: [
+      {
+        _id: slot_id4,
+        start: ISODate("2026-08-05T07:45:00Z"),
+        end: ISODate("2026-08-05T08:30:00Z"),
+        status: "BOOKED",
+        order_id: null,
+      },
+      {
+        _id: slot_id5,
+        start: ISODate("2026-08-05T08:30:00Z"),
+        end: ISODate("2026-08-05T09:00:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+    ],
   },
   {
     _id: charger_id3,
     station_id: station_id2,
     connector_type: "CCS2",
+    charging_type: "DC",
     max_power_kw: 60,
     status: "UNAVAILABLE",
     price_per_kwh: 21.0,
     last_updated_at: ISODate("2026-08-04T18:00:00Z"),
     last_updated_source: "ADMIN",
     fault_flag: true,
+    // order_id2 originally booked 11:00-11:45 but was REFUNDED, so the slot is
+    // AVAILABLE again; charger itself is UNAVAILABLE due to the open fault report
+    availability_slots: [
+      {
+        _id: slot_id6,
+        start: ISODate("2026-08-06T11:00:00Z"),
+        end: ISODate("2026-08-06T11:45:00Z"),
+        status: "AVAILABLE",
+        order_id: null,
+      },
+    ],
   },
 ]);
 
@@ -318,6 +433,43 @@ db.trust_scores.insertMany([
   },
 ]);
 
+// ---------------------------------------------------------------------
+// pricing  (one active pricing config per charger)
+// ---------------------------------------------------------------------
+db.pricing.insertMany([
+  {
+    _id: pricing_id1,
+    charger_id: charger_id1,
+    rate_per_kwh: 18.5,
+    reservation_fee: 20,
+    platform_fee: 10,
+    charging_efficiency: 0.9,
+    buffer_percentage: 10,
+    is_active: true,
+  },
+  {
+    _id: pricing_id2,
+    charger_id: charger_id2,
+    rate_per_kwh: 22.0,
+    reservation_fee: 20,
+    platform_fee: 10,
+    charging_efficiency: 0.9,
+    buffer_percentage: 10,
+    is_active: true,
+  },
+  {
+    _id: pricing_id3,
+    charger_id: charger_id3,
+    rate_per_kwh: 21.0,
+    reservation_fee: 20,
+    platform_fee: 10,
+    charging_efficiency: 0.9,
+    buffer_percentage: 10,
+    is_active: true,
+  },
+]);
+db.pricing.createIndex({ charger_id: 1 }, { unique: true });
+
 print(
-  "ChargeHub mock data seeded: users, vehicles, operators, stations, chargers, orders, payments, reviews, favorites, fault_reports, acknowledgements, trust_scores",
+  "ChargeHub mock data seeded: users, vehicles, operators, stations, chargers, orders, payments, reviews, favorites, fault_reports, acknowledgements, trust_scores, pricing",
 );

@@ -1,11 +1,12 @@
 /* eslint-disable no-undef */
 import mongoose from "mongoose";
+import { STATIONS_STATUS } from "../constants.js";
 
 const stationSchema = new mongoose.Schema(
   {
     operator_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Operator",
+      ref: "User",
       required: true,
     },
     name: {
@@ -30,11 +31,11 @@ const stationSchema = new mongoose.Schema(
       },
     },
     amenities: [String],
-    operating_hours: {
-      open: { type: String, trim: true },
-      close: { type: String, trim: true },
-      is_24x7: { type: Boolean, default: false },
-    },
+    occupancy: [String],
+    // Mixed: the cpo portal (station-service.js) stores {open, close, is_24x7};
+    // the operator self-service flow (operator-station-service.js) stores a
+    // plain "HH:mm-HH:mm" string per the operator-stations spec.
+    operating_hours: mongoose.Schema.Types.Mixed,
     booking_rules: {
       advance_booking_minutes: { type: Number, min: 0, default: 0 },
       cancellation_window_minutes: { type: Number, min: 0, default: 0 },
@@ -46,8 +47,8 @@ const stationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "pending_review", "live", "maintenance", "delisted"],
-      default: "draft",
+      enum: Object.values(STATIONS_STATUS),
+      default: STATIONS_STATUS.CLOSED,
       index: true,
     },
     trust_score: {

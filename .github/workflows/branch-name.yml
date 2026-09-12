@@ -12,7 +12,7 @@ jobs:
         run: |
           BRANCH="${{ github.head_ref }}"
 
-          if [[ ! "$BRANCH" =~ ^(feature|bugfix|hotfix|release|docs|chore|refactor|test)\/[a-z0-9._-]+$ ]]; then
+          if [[ ! "$BRANCH" =~ ^(develop|feature|bugfix|hotfix|release|docs|chore|refactor|test)\/[a-z0-9._-]+$ ]]; then
             echo "Invalid branch name: $BRANCH"
             echo "Expected examples:"
             echo "feature/login"

@@ -13,6 +13,10 @@ const chargerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    charging_type: {
+      type: String,
+      trim: true,
+    },
     max_power_kw: {
       type: Number,
       required: true,
@@ -64,6 +68,21 @@ const chargerSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    availability_slots: [
+      {
+        start: { type: Date, required: true },
+        end: { type: Date, required: true },
+        status: {
+          type: String,
+          trim: true,
+        },
+        order_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Order",
+          default: null,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
